@@ -27,6 +27,8 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
+from decouple import config
+
 
 # Application definition
 
@@ -37,9 +39,19 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    
+    'rest_framework',
+    'corsheaders',
+    'rest_framework_simplejwt',
+    
+    'users',
+    'jobs',
+    'recommendations',
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
+    
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -75,8 +87,11 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        "ENGINE": 'django.db.backends.postgresql',
+        "NAME": config('DB_NAME'),
+        "USER": config('DB_USER'),
+        "PASSWORD": config('DB_PASSWORD'),
+        "HOST": config('DB_HOST'),
     }
 }
 
@@ -111,6 +126,9 @@ USE_I18N = True
 
 USE_TZ = True
 
+CORS_ALLOW_ALL_ORIGINS = True
+
+AUTH_USER_MODEL = 'users.User'
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
@@ -121,3 +139,13 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
+        ),
+    "DEFAULT_PERMISSION_CLASSES": (
+        "rest_framework.permissions.IsAuthenticated",
+    )
+    } 
