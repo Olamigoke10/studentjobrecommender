@@ -25,7 +25,13 @@ SECRET_KEY = 'django-insecure-)0jj4t6jft(hsgx6d($9j*$)#1-6$p&+8suibs44&dw&x2wkjs
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    "studentjobrecommender.onrender.com",
+    ".onrender.com",
+    "localhost",
+    "127.0.0.1",
+]
+
 
 from decouple import config
 
