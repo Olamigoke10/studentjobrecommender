@@ -30,6 +30,16 @@ ALLOWED_HOSTS = config(
     cast=lambda v: [s.strip() for s in v.split(",") if s.strip()],
 )
 
+# Safety net: never allow empty ALLOWED_HOSTS in production by mistake
+if not ALLOWED_HOSTS:
+    ALLOWED_HOSTS = [
+        "studentjobrecommender.onrender.com",
+        ".onrender.com",
+        "localhost",
+        "127.0.0.1",
+    ]
+
+
 # ============================================================
 # APPLICATION DEFINITION
 # ============================================================
