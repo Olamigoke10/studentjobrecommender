@@ -10,14 +10,18 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
+import os
+import sys
 from pathlib import Path
+from decouple import config
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
+# DEBUG: Print that settings are loading (visible in Render logs)
+print(f"=== Loading Django settings from: {__file__} ===", file=sys.stderr)
+print(f"BASE_DIR: {BASE_DIR}", file=sys.stderr)
+print(f"Current working directory: {os.getcwd()}", file=sys.stderr)
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-)0jj4t6jft(hsgx6d($9j*$)#1-6$p&+8suibs44&dw&x2wkjs'
@@ -25,19 +29,58 @@ SECRET_KEY = 'django-insecure-)0jj4t6jft(hsgx6d($9j*$)#1-6$p&+8suibs44&dw&x2wkjs
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = [
-    "studentjobrecommender.onrender.com",
-    ".onrender.com",
-    "localhost",
-    "127.0.0.1",
+# DYNAMIC ALLOWED_HOSTS CONFIGURATION
+# This ensures Render.com hosts are always allowed
+ALLOWED_HOSTS = []
+
+# Always add local development hosts
+ALLOWED_HOSTS.extend([
+    'localhost',
+    '127.0.0.1',
+    '0.0.0.0',
+])
+
+# Add Render.com specific hosts
+RENDER_HOSTS = [
+    'studentjobrecommender.onrender.com',
+    '.onrender.com',  # This allows all subdomains on render.com
+    '*.onrender.com',  # Alternative wildcard syntax
 ]
 
+# Get the specific Render hostname from environment if available
+render_external_hostname = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
+if render_external_hostname:
+    print(f"Found RENDER_EXTERNAL_HOSTNAME: {render_external_hostname}", file=sys.stderr)
+    RENDER_HOSTS.append(render_external_hostname)
+    # Also add with wildcard for subdomains
+    if render_external_hostname.startswith('.'):
+        RENDER_HOSTS.append(render_external_hostname)
+    else:
+        RENDER_HOSTS.append(f'.{render_external_hostname}')
 
-from decouple import config
+# Get the Render service name if available
+render_service_name = os.environ.get('RENDER_SERVICE_NAME')
+if render_service_name:
+    print(f"Found RENDER_SERVICE_NAME: {render_service_name}", file=sys.stderr)
+    render_url = f"{render_service_name}.onrender.com"
+    RENDER_HOSTS.append(render_url)
+    RENDER_HOSTS.append(f'.{render_url}')
 
+# Add any hosts from environment variable (comma-separated list)
+extra_hosts = os.environ.get('ADDITIONAL_ALLOWED_HOSTS', '')
+if extra_hosts:
+    for host in extra_hosts.split(','):
+        host = host.strip()
+        if host:
+            RENDER_HOSTS.append(host)
+
+# Remove duplicates while preserving order
+ALLOWED_HOSTS.extend(list(dict.fromkeys(RENDER_HOSTS)))
+
+print(f"Final ALLOWED_HOSTS: {ALLOWED_HOSTS}", file=sys.stderr)
+print("="*50, file=sys.stderr)
 
 # Application definition
-
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -57,7 +100,6 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
-    
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -87,10 +129,8 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'backend.wsgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
-
 DATABASES = {
     'default': {
         "ENGINE": 'django.db.backends.postgresql',
@@ -101,10 +141,8 @@ DATABASES = {
     }
 }
 
-
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
-
 AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
@@ -120,38 +158,33 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/4.2/topics/i18n/
-
 LANGUAGE_CODE = 'en-us'
-
 TIME_ZONE = 'UTC'
-
 USE_I18N = True
-
 USE_TZ = True
 
+# CORS settings
 CORS_ALLOW_ALL_ORIGINS = True
 
+# Custom user model
 AUTH_USER_MODEL = 'users.User'
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
-
 STATIC_URL = 'static/'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
-
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-
+# REST Framework settings
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         "rest_framework_simplejwt.authentication.JWTAuthentication",
-        ),
+    ),
     "DEFAULT_PERMISSION_CLASSES": (
         "rest_framework.permissions.IsAuthenticated",
     )
-    } 
+}
