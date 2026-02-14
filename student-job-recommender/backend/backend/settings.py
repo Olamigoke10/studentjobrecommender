@@ -28,7 +28,7 @@ print(f"Current working directory: {os.getcwd()}", file=sys.stderr)
 SECRET_KEY = 'django-insecure-)0jj4t6jft(hsgx6d($9j*$)#1-6$p&+8suibs44&dw&x2wkjs'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False  # Set to False for production, can be overridden by environment variable
 
 # DYNAMIC ALLOWED_HOSTS CONFIGURATION
 # This ensures Render.com hosts are always allowed
@@ -45,7 +45,7 @@ ALLOWED_HOSTS.extend([
 RENDER_HOSTS = [
     'studentjobrecommender.onrender.com',
     '.onrender.com',  # This allows all subdomains on render.com
-    '*.onrender.com',  # Alternative wildcard syntax
+    '.onrender.com',  # Alternative wildcard syntax
 ]
 
 # Get the specific Render hostname from environment if available
@@ -162,7 +162,7 @@ else:
         }
     }
 
-print(f"✅ Database configured. Host: {DATABASES['default'].get('HOST', 'Not set')}", file=sys.stderr)
+# print(f"✅ Database configured. Host: {DATABASES['default'].get('HOST', 'Not set')}", file=sys.stderr)
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators

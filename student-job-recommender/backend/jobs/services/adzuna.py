@@ -7,19 +7,37 @@ from django.utils.dateparse import parse_datetime
 
 from jobs.models import Job
 
-
-ADZUNA_APP_ID = config("ADZUNA_APP_ID")
-ADZUNA_APP_KEY = config("ADZUNA_APP_KEY")
-
 BASE_URL = "https://api.adzuna.com/v1/api/jobs/{country}/search/{page}"
 
 
+def _get_adzuna_keys():
+    """
+    Read keys at runtime (not import time) so deploy/build doesn't crash
+    if env vars are missing.
+    """
+    app_id = config("ADZUNA_APP_ID", default="")
+    app_key = config("ADZUNA_APP_KEY", default="")
+    country = config("ADZUNA_COUNTRY", default="gb")
+
+    if not app_id or not app_key:
+        return None, None, country
+    return app_id, app_key, country
+
+
 def fetch_jobs(search="graduate", location="United Kingdom", results_per_page=50, page=1):
-    url = BASE_URL.format(country="gb", page=page)
+    app_id, app_key, country = _get_adzuna_keys()
+
+    if not app_id or not app_key:
+        return None, {
+            "error": "Adzuna API keys are not configured on the server.",
+            "hint": "Set ADZUNA_APP_ID and ADZUNA_APP_KEY in Render Environment Variables.",
+        }
+
+    url = BASE_URL.format(country=country, page=page)
 
     params = {
-        "app_id": ADZUNA_APP_ID,
-        "app_key": ADZUNA_APP_KEY,
+        "app_id": app_id,
+        "app_key": app_key,
         "what": search,
         "where": location,
         "results_per_page": results_per_page,
@@ -34,8 +52,7 @@ def fetch_jobs(search="graduate", location="United Kingdom", results_per_page=50
         return None, {
             "error": "HTTP error occurred while fetching jobs from Adzuna.",
             "status_code": r.status_code,
-            "response": r.text,
-            "url": r.url,   # shows full final URL with params
+            # NOTE: avoid returning r.text in production if it may contain sensitive info
         }
 
     except requests.exceptions.RequestException as e:
@@ -46,7 +63,6 @@ def fetch_jobs(search="graduate", location="United Kingdom", results_per_page=50
 
 
 def clean_job(j: dict) -> dict:
-    """Pure function: takes raw Adzuna job dict and returns a cleaned dict."""
     return {
         "external_id": str(j.get("id", "")).strip(),
         "title": j.get("title", ""),
@@ -64,7 +80,6 @@ def clean_job(j: dict) -> dict:
 
 
 def _parse_posted_date(created_str: str):
-    """Adzuna created string -> python date (for your DateField)."""
     if not created_str:
         return None
 
@@ -80,10 +95,6 @@ def _parse_posted_date(created_str: str):
 
 @transaction.atomic
 def upsert_jobs_from_adzuna(results: list[dict], source: str = "adzuna"):
-    """
-    Creates/updates Job rows using external_id to avoid duplicates.
-    Returns (saved_jobs, created_count, updated_count)
-    """
     saved_jobs = []
     created_count = 0
     updated_count = 0
@@ -110,9 +121,7 @@ def upsert_jobs_from_adzuna(results: list[dict], source: str = "adzuna"):
         )
 
         saved_jobs.append(obj)
-        if created:
-            created_count += 1
-        else:
-            updated_count += 1
+        created_count += 1 if created else 0
+        updated_count += 0 if created else 1
 
     return saved_jobs, created_count, updated_count
