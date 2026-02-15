@@ -15,6 +15,8 @@ import sys
 from pathlib import Path
 from decouple import config
 import dj_database_url  # Make sure to install this: pip install dj-database-url
+from datetime import timedelta
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -206,7 +208,16 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+# Simple JWT settings
+SIMPLE_JWT ={
+    "USER_ID_FIELD": "id",
+    "USER_ID_CLAIM": "user_id",
+    
+    "AUTH_HEADER_TYPES": ("Bearer",),
+}
+
 # REST Framework settings
+
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         "rest_framework_simplejwt.authentication.JWTAuthentication",

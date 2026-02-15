@@ -4,6 +4,7 @@ from django.shortcuts import render
 from rest_framework import generics,permissions
 from .serializers import RegisterSerializer, StudentProfileSerializer
 from .models import StudentProfile
+from .token import EmailTokenObtainPairSerializer
 
 
 class RegisterView(generics.CreateAPIView):
@@ -17,3 +18,9 @@ class StudentProfileView(generics.RetrieveUpdateAPIView):
     
     def get_object(self):
         return self.request.user.profile
+    
+
+class EmailTokenObtainPairView(EmailTokenObtainPairSerializer):
+    serializer_class = EmailTokenObtainPairSerializer
+    
+    
