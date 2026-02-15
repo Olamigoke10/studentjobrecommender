@@ -5,6 +5,7 @@ from rest_framework import generics,permissions
 from .serializers import RegisterSerializer, StudentProfileSerializer
 from .models import StudentProfile
 from .token import EmailTokenObtainPairSerializer
+from rest_framework_simplejwt.views import TokenObtainPairView
 
 
 class RegisterView(generics.CreateAPIView):
@@ -20,7 +21,7 @@ class StudentProfileView(generics.RetrieveUpdateAPIView):
         return self.request.user.profile
     
 
-class EmailTokenObtainPairView(EmailTokenObtainPairSerializer):
+class EmailTokenObtainPairView(TokenObtainPairView):
     serializer_class = EmailTokenObtainPairSerializer
     
     
