@@ -1,0 +1,220 @@
+import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import { jobsAPI } from '../api/jobs.api';
+import Loader from '../components/Loader';
+import { ROUTES, APPLICATION_STATUSES } from '../utils/constants';
+
+const formatDate = (dateString) => {
+  if (!dateString) return null;
+  return new Date(dateString).toLocaleDateString('en-GB', { year: 'numeric', month: 'short', day: 'numeric' });
+};
+
+const Applications = () => {
+  const [applications, setApplications] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [updating, setUpdating] = useState({});
+  const [editingNotes, setEditingNotes] = useState(null);
+  const [notesDraft, setNotesDraft] = useState('');
+
+  useEffect(() => {
+    loadApplications();
+  }, []);
+
+  const loadApplications = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await jobsAPI.getApplications();
+      setApplications(response.data || []);
+    } catch (err) {
+      console.error('Failed to load applications:', err);
+      setError('Failed to load applications. Please try again later.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleStatusChange = async (appId, newStatus) => {
+    if (updating[appId]) return;
+    setUpdating((prev) => ({ ...prev, [appId]: true }));
+    try {
+      const res = await jobsAPI.updateApplication(appId, { status: newStatus });
+      setApplications((prev) =>
+        prev.map((a) => (a.id === appId ? { ...a, status: res.data.status } : a))
+      );
+    } catch (err) {
+      console.error('Failed to update status:', err);
+      alert('Failed to update status. Please try again.');
+    } finally {
+      setUpdating((prev) => ({ ...prev, [appId]: false }));
+    }
+  };
+
+  const startEditNotes = (app) => {
+    setEditingNotes(app.id);
+    setNotesDraft(app.notes || '');
+  };
+
+  const saveNotes = async (appId) => {
+    if (updating[appId]) return;
+    setUpdating((prev) => ({ ...prev, [appId]: true }));
+    try {
+      const res = await jobsAPI.updateApplication(appId, { notes: notesDraft });
+      setApplications((prev) =>
+        prev.map((a) => (a.id === appId ? { ...a, notes: res.data.notes } : a))
+      );
+      setEditingNotes(null);
+    } catch (err) {
+      console.error('Failed to save notes:', err);
+      alert('Failed to save notes. Please try again.');
+    } finally {
+      setUpdating((prev) => ({ ...prev, [appId]: false }));
+    }
+  };
+
+  const cancelEditNotes = () => {
+    setEditingNotes(null);
+    setNotesDraft('');
+  };
+
+  if (loading) return <Loader />;
+
+  if (error) {
+    return (
+      <div className="py-6 animate-fade-in">
+        <div className="card p-6 border-red-200 bg-red-50">
+          <p className="text-red-800 font-medium">{error}</p>
+          <button onClick={loadApplications} className="btn-secondary mt-4 border-red-200 text-red-700 hover:bg-red-100">
+            Try again
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="py-6 animate-fade-in">
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-slate-900 tracking-tight">My Applications</h1>
+        <p className="mt-2 text-slate-600">Track status and notes for each application</p>
+      </div>
+
+      {applications.length === 0 ? (
+        <div className="card p-12 text-center">
+          <div className="inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-primary-100 text-primary-600 mb-6">
+            <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+            </svg>
+          </div>
+          <h3 className="text-lg font-semibold text-slate-900">No applications yet</h3>
+          <p className="mt-2 text-slate-600 text-sm max-w-sm mx-auto">
+            Mark jobs as applied from Browse Jobs or Saved to track them here.
+          </p>
+          <Link to={ROUTES.JOBS} className="btn-primary mt-6 inline-flex">
+            Browse jobs
+          </Link>
+        </div>
+      ) : (
+        <div className="space-y-6">
+          {applications.map((app) => {
+            const job = app.job;
+            if (!job) return null;
+            const isEditingNotes = editingNotes === app.id;
+            return (
+              <article key={app.id} className="card card-hover p-6">
+                <div className="flex flex-col gap-4">
+                  <div className="flex flex-wrap items-start justify-between gap-4">
+                    <div className="min-w-0 flex-1">
+                      <h3 className="text-xl font-bold text-slate-900">{job.title}</h3>
+                      <div className="flex flex-wrap gap-x-4 gap-y-1 mt-1 text-sm text-slate-600">
+                        {job.company && <span className="font-medium text-slate-700">{job.company}</span>}
+                        {job.location && <span>{job.location}</span>}
+                        {job.job_type && (
+                          <span className="inline-flex items-center px-2 py-0.5 rounded-lg text-xs font-medium bg-primary-100 text-primary-700">
+                            {job.job_type}
+                          </span>
+                        )}
+                      </div>
+                      <p className="mt-2 text-xs text-slate-500">
+                        Applied {formatDate(app.applied_at)}
+                        {app.updated_at !== app.applied_at && ` · Updated ${formatDate(app.updated_at)}`}
+                      </p>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <select
+                        value={app.status}
+                        onChange={(e) => handleStatusChange(app.id, e.target.value)}
+                        disabled={updating[app.id]}
+                        className="input-field w-auto min-w-[140px] py-2 text-sm"
+                      >
+                        {APPLICATION_STATUSES.map((s) => (
+                          <option key={s.value} value={s.value}>{s.label}</option>
+                        ))}
+                      </select>
+                      {job.url && (
+                        <a
+                          href={job.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="btn-primary text-sm py-2"
+                        >
+                          View job
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                  <div>
+                    {isEditingNotes ? (
+                      <div className="flex flex-col gap-2">
+                        <textarea
+                          value={notesDraft}
+                          onChange={(e) => setNotesDraft(e.target.value)}
+                          placeholder="Add notes…"
+                          rows={2}
+                          className="input-field resize-none"
+                        />
+                        <div className="flex gap-2">
+                          <button
+                            type="button"
+                            onClick={() => saveNotes(app.id)}
+                            disabled={updating[app.id]}
+                            className="btn-primary text-sm"
+                          >
+                            {updating[app.id] ? 'Saving…' : 'Save'}
+                          </button>
+                          <button type="button" onClick={cancelEditNotes} className="btn-secondary text-sm">
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex items-start justify-between gap-2">
+                        <p className="text-sm text-slate-600 flex-1">
+                          {app.notes ? (
+                            <span className="whitespace-pre-wrap">{app.notes}</span>
+                          ) : (
+                            <span className="text-slate-400">No notes</span>
+                          )}
+                        </p>
+                        <button
+                          type="button"
+                          onClick={() => startEditNotes(app)}
+                          className="text-sm font-medium text-primary-600 hover:text-primary-700"
+                        >
+                          {app.notes ? 'Edit notes' : 'Add notes'}
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </article>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default Applications;

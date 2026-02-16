@@ -9,6 +9,7 @@ import Jobs from './pages/Jobs';
 import SavedJobs from './pages/SavedJobs';
 import Recommendations from './pages/Recommendations';
 import Profile from './pages/Profile';
+import Applications from './pages/Applications';
 import { ROUTES } from './utils/constants'
 
 function App() {
@@ -50,7 +51,14 @@ function App() {
                   </ProtectedRoute>
                 }
               />
-              
+              <Route
+                path={ROUTES.APPLICATIONS}
+                element={
+                  <ProtectedRoute>
+                    <Applications />
+                  </ProtectedRoute>
+                }
+              />
               <Route
                 path={ROUTES.RECOMMENDATIONS}
                 element={

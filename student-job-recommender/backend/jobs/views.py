@@ -1,18 +1,41 @@
 from rest_framework import generics, permissions, views, status
 from rest_framework.response import Response
+from rest_framework.pagination import PageNumberPagination
+from django.db.models import Q
 
 from .models import Job
 from .serializers import JobSerializer
 from jobs.services.adzuna import fetch_jobs, upsert_jobs_from_adzuna
 
 
+class JobListPagination(PageNumberPagination):
+    page_size = 20
+    page_size_query_param = "page_size"
+    max_page_size = 100
+
+
 # Create your views here.
 class JobListView(generics.ListAPIView):
     serializer_class = JobSerializer
     permission_classes = [permissions.AllowAny]
-    
+    pagination_class = JobListPagination
+
     def get_queryset(self):
-        return Job.objects.all().order_by('-cached_at')
+        qs = Job.objects.all().order_by("-cached_at")
+        search = (self.request.query_params.get("search") or "").strip()
+        location = (self.request.query_params.get("location") or "").strip()
+        job_type = (self.request.query_params.get("job_type") or "").strip()
+        if search:
+            qs = qs.filter(
+                Q(title__icontains=search)
+                | Q(company__icontains=search)
+                | Q(description__icontains=search)
+            )
+        if location:
+            qs = qs.filter(location__icontains=location)
+        if job_type:
+            qs = qs.filter(job_type__icontains=job_type)
+        return qs
     
 
 def _do_fetch_jobs(request):

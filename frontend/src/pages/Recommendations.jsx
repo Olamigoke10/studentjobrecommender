@@ -12,9 +12,19 @@ const Recommendations = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [saving, setSaving] = useState({});
+  const [applicationsMap, setApplicationsMap] = useState({});
 
   useEffect(() => {
     loadRecommendations();
+  }, []);
+
+  useEffect(() => {
+    jobsAPI.getApplications().then((res) => {
+      const list = res.data || [];
+      const map = {};
+      list.forEach((a) => { map[a.job?.id] = { id: a.id, status: a.status }; });
+      setApplicationsMap(map);
+    }).catch(() => {});
   }, []);
 
   const loadRecommendations = async () => {
@@ -93,8 +103,18 @@ const Recommendations = () => {
               key={job.id}
               job={job}
               onSave={handleSaveJob}
+              onMarkApplied={async (jobId) => {
+                if (saving[jobId]) return;
+                setSaving((prev) => ({ ...prev, [jobId]: true }));
+                try {
+                  const res = await jobsAPI.createApplication(jobId, { status: 'applied' });
+                  setApplicationsMap((prev) => ({ ...prev, [jobId]: { id: res.data.id, status: 'applied' } }));
+                } catch (_) { alert('Failed to mark as applied.'); }
+                finally { setSaving((prev) => ({ ...prev, [jobId]: false })); }
+              }}
               saving={saving[job.id]}
               isSaved={job.isSaved}
+              applicationStatus={applicationsMap[job.id]?.status}
               showMatchScore
               recommendedReason={job.recommended_reason}
             />

@@ -1,13 +1,13 @@
 import axiosInstance from './axios';
 
 export const jobsAPI = {
-  // Get all jobs
-  getJobs: () =>
-    axiosInstance.get('/api/jobs/'),
+  // Get jobs with optional search, filters, pagination. Returns { count, next, previous, results }.
+  getJobs: (params = {}) =>
+    axiosInstance.get('/api/jobs/', { params }),
 
   // Fetch latest jobs from Adzuna and save to DB (for students to populate the list)
-  refreshJobs: () =>
-    axiosInstance.post('/api/jobs/refresh/', {}),
+  refreshJobs: (body = {}) =>
+    axiosInstance.post('/api/jobs/refresh/', body),
 
   // Get saved jobs for current user
   getSavedJobs: () =>
@@ -20,4 +20,17 @@ export const jobsAPI = {
   // Unsave a job
   unsaveJob: (jobId) =>
     axiosInstance.delete(`/api/jobs/${jobId}/`),
+
+  // Applications
+  getApplications: () =>
+    axiosInstance.get('/api/jobs/applications/'),
+
+  createApplication: (jobId, data = {}) =>
+    axiosInstance.post('/api/jobs/applications/', { job_id: jobId, ...data }),
+
+  updateApplication: (applicationId, data) =>
+    axiosInstance.patch(`/api/jobs/applications/${applicationId}/`, data),
+
+  deleteApplication: (applicationId) =>
+    axiosInstance.delete(`/api/jobs/applications/${applicationId}/`),
 };

@@ -10,9 +10,20 @@ const SavedJobs = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [unsaving, setUnsaving] = useState({});
+  const [saving, setSaving] = useState({});
+  const [applicationsMap, setApplicationsMap] = useState({});
 
   useEffect(() => {
     loadSavedJobs();
+  }, []);
+
+  useEffect(() => {
+    jobsAPI.getApplications().then((res) => {
+      const list = res.data || [];
+      const map = {};
+      list.forEach((a) => { map[a.job?.id] = { id: a.id, status: a.status }; });
+      setApplicationsMap(map);
+    }).catch(() => {});
   }, []);
 
   const loadSavedJobs = async () => {
@@ -80,8 +91,18 @@ const SavedJobs = () => {
               key={job.id}
               job={job}
               onUnsave={handleUnsaveJob}
-              saving={unsaving[job.id]}
+              onMarkApplied={async (jobId) => {
+                if (saving[jobId]) return;
+                setSaving((prev) => ({ ...prev, [jobId]: true }));
+                try {
+                  const res = await jobsAPI.createApplication(jobId, { status: 'applied' });
+                  setApplicationsMap((prev) => ({ ...prev, [jobId]: { id: res.data.id, status: 'applied' } }));
+                } catch (_) { alert('Failed to mark as applied.'); }
+                finally { setSaving((prev) => ({ ...prev, [jobId]: false })); }
+              }}
+              saving={unsaving[job.id] || saving[job.id]}
               variant="saved"
+              applicationStatus={applicationsMap[job.id]?.status}
             />
           ))}
         </div>

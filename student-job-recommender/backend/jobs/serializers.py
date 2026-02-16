@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Job
+from .models import Job, ApplicationTracker
 
 
 class JobSerializer(serializers.ModelSerializer):
@@ -18,3 +18,12 @@ class JobSerializer(serializers.ModelSerializer):
             "posted_date",
             "cached_at",
         ]
+
+
+class ApplicationTrackerSerializer(serializers.ModelSerializer):
+    job = JobSerializer(read_only=True)
+
+    class Meta:
+        model = ApplicationTracker
+        fields = ["id", "job", "status", "applied_at", "notes", "updated_at"]
+        read_only_fields = ["applied_at", "updated_at"]
