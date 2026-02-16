@@ -83,8 +83,6 @@ const login = async (email, password) => {
   }
 };
 
-
-
   const register = async (userData) => {
     setError(null);
     try {

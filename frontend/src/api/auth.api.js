@@ -16,6 +16,6 @@ export const authAPI = {
   updateProfile: (profileData) => 
     axiosInstance.patch('/api/users/me/', profileData),
   
-  getSkills: () => 
+  getSkills: () =>
     axiosInstance.get('/api/users/skills/'),
 };

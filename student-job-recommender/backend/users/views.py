@@ -1,7 +1,7 @@
 from django.shortcuts import render
 
 # Create your views here.
-from rest_framework import generics,permissions, views
+from rest_framework import generics, permissions, views
 from rest_framework.response import Response
 from .serializers import RegisterSerializer, StudentProfileSerializer, SkillSerializer, User
 from .models import StudentProfile, Skill
@@ -34,5 +34,5 @@ class SkillListView(views.APIView):
         skills = Skill.objects.all().order_by('name')
         serializer = SkillSerializer(skills, many=True)
         return Response(serializer.data)
-    
-    
+
+
