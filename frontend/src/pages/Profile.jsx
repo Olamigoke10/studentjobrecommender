@@ -111,20 +111,19 @@ const Profile = () => {
   }
 
   return (
-    <div className="py-6">
+    <div className="py-6 animate-fade-in">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Profile Settings</h1>
-        <p className="mt-2 text-gray-600">
+        <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Profile</h1>
+        <p className="mt-2 text-slate-600">
           Update your profile to get better job recommendations
         </p>
       </div>
 
-      <div className="bg-white shadow rounded-lg p-6">
+      <div className="card p-6 sm:p-8">
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Course */}
           <div>
-            <label htmlFor="course" className="block text-sm font-medium text-gray-700 mb-2">
-              Course / Field of Study
+            <label htmlFor="course" className="block text-sm font-semibold text-slate-700 mb-1.5">
+              Course / field of study
             </label>
             <input
               type="text"
@@ -132,35 +131,31 @@ const Profile = () => {
               name="course"
               value={formData.course}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-              placeholder="e.g., Computer Science"
+              className="input-field"
+              placeholder="e.g. Computer Science"
             />
           </div>
-
-          {/* Preferred Job Type */}
           <div>
-            <label htmlFor="preferred_job_type" className="block text-sm font-medium text-gray-700 mb-2">
-              Preferred Job Type
+            <label htmlFor="preferred_job_type" className="block text-sm font-semibold text-slate-700 mb-1.5">
+              Preferred job type
             </label>
             <select
               id="preferred_job_type"
               name="preferred_job_type"
               value={formData.preferred_job_type}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              className="input-field"
             >
-              {JOB_TYPES.map(type => (
+              {JOB_TYPES.map((type) => (
                 <option key={type.value} value={type.value}>
                   {type.label}
                 </option>
               ))}
             </select>
           </div>
-
-          {/* Preferred Location */}
           <div>
-            <label htmlFor="preferred_location" className="block text-sm font-medium text-gray-700 mb-2">
-              Preferred Location
+            <label htmlFor="preferred_location" className="block text-sm font-semibold text-slate-700 mb-1.5">
+              Preferred location
             </label>
             <input
               type="text"
@@ -168,93 +163,63 @@ const Profile = () => {
               name="preferred_location"
               value={formData.preferred_location}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-              placeholder="e.g., London, United Kingdom"
+              className="input-field"
+              placeholder="e.g. London, UK"
             />
           </div>
-
-          {/* Skills */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-semibold text-slate-700 mb-2">
               Skills
             </label>
-            <div className="border border-gray-300 rounded-md p-4 min-h-[100px] max-h-[200px] overflow-y-auto">
+            <div className="rounded-xl border border-slate-200 bg-slate-50/50 p-4 min-h-[100px] max-h-[220px] overflow-y-auto">
               {skills.length === 0 ? (
-                <p className="text-sm text-gray-500">No skills available</p>
+                <p className="text-sm text-slate-500">No skills available</p>
               ) : (
                 <div className="flex flex-wrap gap-2">
-                  {skills.map(skill => (
+                  {skills.map((skill) => (
                     <button
                       key={skill.id}
                       type="button"
                       onClick={() => handleSkillToggle(skill.id)}
-                      className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
+                      className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 ${
                         formData.skills_ids.includes(skill.id)
-                          ? 'bg-blue-600 text-white'
-                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                          ? 'bg-primary-600 text-white shadow-sm'
+                          : 'bg-white border border-slate-200 text-slate-700 hover:border-primary-300 hover:bg-primary-50'
                       }`}
                     >
                       {skill.name}
-                      {formData.skills_ids.includes(skill.id) && (
-                        <span className="ml-1">✓</span>
-                      )}
+                      {formData.skills_ids.includes(skill.id) && ' ✓'}
                     </button>
                   ))}
                 </div>
               )}
             </div>
-            <p className="mt-2 text-xs text-gray-500">
-              Click skills to select/deselect them
-            </p>
+            <p className="mt-2 text-xs text-slate-500">Click to select or deselect</p>
           </div>
 
-          {/* Error Message */}
           {error && (
-            <div className="bg-red-50 border border-red-200 rounded-md p-4">
-              <p className="text-sm text-red-800">{error}</p>
+            <div className="rounded-xl bg-red-50 border border-red-100 px-4 py-3">
+              <p className="text-sm font-medium text-red-800">{error}</p>
             </div>
           )}
-
-          {/* Success Message */}
           {success && (
-            <div className="bg-green-50 border border-green-200 rounded-md p-4">
-              <p className="text-sm text-green-800">Profile updated successfully!</p>
+            <div className="rounded-xl bg-emerald-50 border border-emerald-100 px-4 py-3">
+              <p className="text-sm font-medium text-emerald-800">Profile updated successfully.</p>
             </div>
           )}
 
-          {/* Submit Button */}
-          <div className="flex justify-end">
-            <button
-              type="submit"
-              disabled={saving}
-              className="inline-flex items-center px-6 py-2 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
+          <div className="flex justify-end pt-2">
+            <button type="submit" disabled={saving} className="btn-primary px-8 py-3 disabled:opacity-50 disabled:cursor-not-allowed">
               {saving ? (
-                <>
-                  <svg
-                    className="animate-spin -ml-1 mr-3 h-5 w-5"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                  >
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                    ></circle>
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                    ></path>
+                <span className="flex items-center gap-2">
+                  <svg className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                   </svg>
                   Saving...
-                </>
+                </span>
               ) : (
-                'Save Changes'
+                'Save changes'
               )}
             </button>
           </div>
