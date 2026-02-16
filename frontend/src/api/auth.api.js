@@ -18,4 +18,7 @@ export const authAPI = {
   
   getSkills: () =>
     axiosInstance.get('/api/users/skills/'),
+
+  getCourses: () =>
+    axiosInstance.get('/api/users/courses/'),
 };

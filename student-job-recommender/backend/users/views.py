@@ -36,3 +36,12 @@ class SkillListView(views.APIView):
         return Response(serializer.data)
 
 
+class CourseListView(views.APIView):
+    """Return list of course/degree names for sign-up and profile. No auth required."""
+    permission_classes = [permissions.AllowAny]
+
+    def get(self, request):
+        from .courses_data import COURSES
+        return Response(COURSES)
+
+

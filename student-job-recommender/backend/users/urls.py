@@ -4,6 +4,7 @@ from .views import (
     RegisterView,
     StudentProfileView,
     SkillListView,
+    CourseListView,
 )
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
@@ -16,6 +17,7 @@ urlpatterns = [
     path("token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
     path("me/", StudentProfileView.as_view(), name="student_profile"),
     path("skills/", SkillListView.as_view(), name="skill_list"),
+    path("courses/", CourseListView.as_view(), name="course_list"),
 ]
 
 

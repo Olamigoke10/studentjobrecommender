@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { authAPI } from '../api/auth.api';
 import { useAuth } from '../auth/AuthContext';
 import Loader from '../components/Loader';
+import { COURSES as FALLBACK_COURSES } from '../utils/constants';
 
 const JOB_TYPES = [
   { value: 'internship', label: 'Internship' },
@@ -24,10 +25,17 @@ const Profile = () => {
     preferred_location: '',
     skills_ids: [],
   });
+  const [courses, setCourses] = useState(FALLBACK_COURSES);
 
   useEffect(() => {
     loadProfile();
     loadSkills();
+  }, []);
+
+  useEffect(() => {
+    authAPI.getCourses()
+      .then((res) => setCourses(res.data || FALLBACK_COURSES))
+      .catch(() => setCourses(FALLBACK_COURSES));
   }, []);
 
   useEffect(() => {
@@ -129,15 +137,21 @@ const Profile = () => {
             <label htmlFor="course" className="block text-sm font-semibold text-slate-700 mb-1.5">
               Course / field of study
             </label>
-            <input
-              type="text"
+            <select
               id="course"
               name="course"
               value={formData.course}
               onChange={handleChange}
               className="input-field"
-              placeholder="e.g. Computer Science"
-            />
+            >
+              <option value="">Select course</option>
+              {formData.course && !courses.includes(formData.course) && (
+                <option value={formData.course}>{formData.course}</option>
+              )}
+              {courses.map((course) => (
+                <option key={course} value={course}>{course}</option>
+              ))}
+            </select>
           </div>
           <div>
             <label htmlFor="preferred_job_type" className="block text-sm font-semibold text-slate-700 mb-1.5">

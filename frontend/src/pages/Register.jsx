@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
-import { ROUTES, COURSES } from '../utils/constants';
+import { authAPI } from '../api/auth.api';
+import { ROUTES, COURSES as FALLBACK_COURSES } from '../utils/constants';
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -11,10 +12,17 @@ const Register = () => {
     confirmPassword: '',
     course: '',
   });
+  const [courses, setCourses] = useState(FALLBACK_COURSES);
   const [loading, setLoading] = useState(false);
   const [validationError, setValidationError] = useState('');
   const { register, error } = useAuth();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    authAPI.getCourses()
+      .then((res) => setCourses(res.data || FALLBACK_COURSES))
+      .catch(() => setCourses(FALLBACK_COURSES));
+  }, []);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -107,7 +115,7 @@ const Register = () => {
                 className="input-field"
               >
                 <option value="">Select course</option>
-                {COURSES.map((course) => (
+                {courses.map((course) => (
                   <option key={course} value={course}>{course}</option>
                 ))}
               </select>
