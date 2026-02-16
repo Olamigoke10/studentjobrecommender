@@ -59,7 +59,11 @@ const Profile = () => {
       const response = await authAPI.getSkills();
       setSkills(response.data);
     } catch (err) {
-      console.error('Failed to load skills:', err);
+      // 404 = skills endpoint not deployed yet; treat as empty list
+      if (err.response?.status !== 404) {
+        console.error('Failed to load skills:', err);
+      }
+      setSkills([]);
     }
   };
 

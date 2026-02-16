@@ -31,11 +31,11 @@ export const AuthProvider = ({ children }) => {
       const response = await authAPI.getProfile();
       setUser(response.data);
     } catch (error) {
-      console.error("Failed to load user:", error);
-
       if (error.response?.status === 401) {
         TokenService.removeTokens();
         setUser(null);
+      } else {
+        console.error("Failed to load user:", error);
       }
     } finally {
       setLoading(false);
@@ -49,9 +49,10 @@ export const AuthProvider = ({ children }) => {
 
 const login = async (email, password) => {
   setError(null);
+  const normalizedEmail = (email || "").trim().toLowerCase();
 
   try {
-    const response = await authAPI.login(email, password);
+    const response = await authAPI.login(normalizedEmail, password);
 
     console.log("LOGIN RESPONSE:", response.data);
 
@@ -89,8 +90,9 @@ const login = async (email, password) => {
     try {
       await authAPI.register(userData);
 
-      // Auto login after registration
-      const loginResult = await login(userData.email, userData.password);
+      // Auto login after registration (use lowercased email to match backend)
+      const email = (userData.email || "").trim().toLowerCase();
+      const loginResult = await login(email, userData.password);
       return loginResult;
     } catch (error) {
       console.error('Register error:', error);
