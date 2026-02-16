@@ -34,7 +34,11 @@ class JobListView(generics.ListAPIView):
         if location:
             qs = qs.filter(location__icontains=location)
         if job_type:
-            qs = qs.filter(job_type__icontains=job_type)
+            # Match both "Full-time" and "Full time" / "full_time" etc.
+            normalized = job_type.replace("-", " ").replace("_", " ").strip()
+            qs = qs.filter(
+                Q(job_type__icontains=job_type) | Q(job_type__icontains=normalized)
+            )
         return qs
     
 

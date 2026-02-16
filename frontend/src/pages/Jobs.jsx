@@ -20,14 +20,17 @@ const Jobs = () => {
   const [totalCount, setTotalCount] = useState(0);
   const [applicationsMap, setApplicationsMap] = useState({});
 
-  const loadJobs = useCallback(async (pageNum = 1, append = false) => {
+  const loadJobs = useCallback(async (pageNum = 1, append = false, filterOverride = null) => {
     try {
       if (!append) setLoading(true);
       setError(null);
       const params = { page: pageNum, page_size: PAGE_SIZE };
-      if (search.trim()) params.search = search.trim();
-      if (location.trim()) params.location = location.trim();
-      if (jobType) params.job_type = jobType;
+      const s = filterOverride ? filterOverride.search ?? '' : search.trim();
+      const l = filterOverride ? filterOverride.location ?? '' : location.trim();
+      const jt = filterOverride ? (filterOverride.job_type ?? '') : jobType;
+      if (s) params.search = s;
+      if (l) params.location = l;
+      if (jt) params.job_type = jt;
       const response = await jobsAPI.getJobs(params);
       const data = response.data;
       const list = data.results ?? data;
@@ -44,9 +47,22 @@ const Jobs = () => {
     }
   }, [search, location, jobType]);
 
+  // Load jobs only on mount; Search button and job-type change also run search
+  const isInitialMount = React.useRef(true);
   useEffect(() => {
     loadJobs(1);
-  }, [loadJobs]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // When user picks a job type, run search (skip on initial mount)
+  useEffect(() => {
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
+    loadJobs(1);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [jobType]);
 
   const loadApplications = useCallback(async () => {
     try {
@@ -186,33 +202,76 @@ const Jobs = () => {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
             </svg>
           </div>
-          <h3 className="text-lg font-semibold text-slate-900">Load graduate jobs</h3>
-          <p className="mt-2 text-slate-600 text-sm max-w-sm mx-auto">
-            Jobs are pulled from our partner feed. Click below to load the latest opportunities.
-          </p>
-          {refreshError && (
-            <p className="mt-3 text-sm text-amber-700 bg-amber-50 rounded-xl px-4 py-2 inline-block">
-              {refreshError}
-            </p>
+          {search.trim() || location.trim() || jobType ? (
+            <>
+              <h3 className="text-lg font-semibold text-slate-900">No jobs match your filters</h3>
+              <p className="mt-2 text-slate-600 text-sm max-w-sm mx-auto">
+                Try different keywords, location, or job type—or clear filters and load from the feed.
+              </p>
+              <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSearch('');
+                    setLocation('');
+                    setJobType('');
+                    loadJobs(1, false, { search: '', location: '', job_type: '' });
+                  }}
+                  className="btn-secondary"
+                >
+                  Clear filters
+                </button>
+                <button
+                  type="button"
+                  onClick={handleRefreshJobs}
+                  disabled={refreshing}
+                  className="btn-primary inline-flex disabled:opacity-60"
+                >
+                  {refreshing ? (
+                    <>
+                      <svg className="animate-spin h-5 w-5 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                      </svg>
+                      Loading…
+                    </>
+                  ) : (
+                    'Load latest jobs'
+                  )}
+                </button>
+              </div>
+            </>
+          ) : (
+            <>
+              <h3 className="text-lg font-semibold text-slate-900">Load graduate jobs</h3>
+              <p className="mt-2 text-slate-600 text-sm max-w-sm mx-auto">
+                Jobs are pulled from our partner feed. Click below to load the latest opportunities.
+              </p>
+              {refreshError && (
+                <p className="mt-3 text-sm text-amber-700 bg-amber-50 rounded-xl px-4 py-2 inline-block">
+                  {refreshError}
+                </p>
+              )}
+              <button
+                type="button"
+                onClick={handleRefreshJobs}
+                disabled={refreshing}
+                className="btn-primary mt-6 inline-flex disabled:opacity-60"
+              >
+                {refreshing ? (
+                  <>
+                    <svg className="animate-spin h-5 w-5 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                    </svg>
+                    Loading jobs…
+                  </>
+                ) : (
+                  'Load latest jobs'
+                )}
+              </button>
+            </>
           )}
-          <button
-            type="button"
-            onClick={handleRefreshJobs}
-            disabled={refreshing}
-            className="btn-primary mt-6 inline-flex disabled:opacity-60"
-          >
-            {refreshing ? (
-              <>
-                <svg className="animate-spin h-5 w-5 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                </svg>
-                Loading jobs…
-              </>
-            ) : (
-              'Load latest jobs'
-            )}
-          </button>
         </div>
       ) : (
         <>
