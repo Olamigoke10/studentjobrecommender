@@ -37,7 +37,10 @@ const Jobs = () => {
       const res = await jobsAPI.refreshJobs();
       const newJobs = res.data?.jobs ?? [];
       setJobs(newJobs);
-      if (newJobs.length === 0) setRefreshError('No jobs returned. The job source may be temporarily unavailable.');
+      if (newJobs.length === 0) {
+        const hint = res.data?.hint || 'No jobs returned. Check that Adzuna keys (ADZUNA_APP_ID, ADZUNA_APP_KEY) are set in Render and your app is for UK (gb).';
+        setRefreshError(hint);
+      }
     } catch (err) {
       const msg = err.response?.data?.error || err.response?.data?.hint || 'Failed to load jobs. Check back later.';
       setRefreshError(msg);
