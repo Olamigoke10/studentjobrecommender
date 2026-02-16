@@ -29,7 +29,7 @@ class SaveJobToggleView(views.APIView):
         return Response({"saved": True}, status=status.HTTP_201_CREATED if created else status.HTTP_200_OK)
 
     def delete(self, request, job_id):
-        student = request.user.profile
+        student = get_object_or_404(StudentProfile, user=request.user)
         job = get_object_or_404(Job, id=job_id)
 
         SavedJob.objects.filter(student=student, job=job).delete()

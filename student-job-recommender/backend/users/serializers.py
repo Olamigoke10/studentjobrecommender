@@ -59,6 +59,7 @@ class SkillSerializer(serializers.ModelSerializer):
 
 
 class StudentProfileSerializer(serializers.ModelSerializer):
+    email = serializers.EmailField(source="user.email", read_only=True)
     skills = SkillSerializer(many=True, read_only=True)
 
     skills_ids = serializers.ListField(
@@ -69,7 +70,7 @@ class StudentProfileSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = StudentProfile
-        fields = ["skills", "skills_ids", "preferred_job_type", "preferred_location", "course"]
+        fields = ["email", "skills", "skills_ids", "preferred_job_type", "preferred_location", "course"]
 
     def update(self, instance, validated_data):
         skills_ids = validated_data.pop("skills_ids", None)
