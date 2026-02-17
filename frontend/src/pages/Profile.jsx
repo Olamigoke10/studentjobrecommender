@@ -125,15 +125,15 @@ const Profile = () => {
   }
 
   return (
-    <div className="py-6 animate-fade-in">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Profile</h1>
-        <p className="mt-2 text-slate-600">
+    <div className="py-4 sm:py-6 animate-fade-in">
+      <div className="mb-4 sm:mb-8">
+        <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">Profile</h1>
+        <p className="mt-1 sm:mt-2 text-slate-600 text-sm sm:text-base">
           Update your profile to get better job recommendations
         </p>
       </div>
 
-      <div className="card p-6 sm:p-8">
+      <div className="card p-4 sm:p-6 lg:p-8">
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
             <label htmlFor="name" className="block text-sm font-semibold text-slate-700 mb-1.5">
@@ -243,8 +243,8 @@ const Profile = () => {
             </div>
           )}
 
-          <div className="flex justify-end pt-2">
-            <button type="submit" disabled={saving} className="btn-primary px-8 py-3 disabled:opacity-50 disabled:cursor-not-allowed">
+          <div className="flex flex-col sm:flex-row sm:justify-end pt-2">
+            <button type="submit" disabled={saving} className="btn-primary w-full sm:w-auto min-h-[44px] px-6 sm:px-8 py-3 disabled:opacity-50 disabled:cursor-not-allowed">
               {saving ? (
                 <span className="flex items-center gap-2">
                   <i className="bx bx-loader-alt bx-spin text-xl" />

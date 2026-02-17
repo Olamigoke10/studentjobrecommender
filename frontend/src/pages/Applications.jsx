@@ -90,10 +90,10 @@ const Applications = () => {
   }
 
   return (
-    <div className="py-6 animate-fade-in">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-slate-900 tracking-tight">My Applications</h1>
-        <p className="mt-2 text-slate-600">Track status and notes for each application</p>
+    <div className="py-4 sm:py-6 animate-fade-in">
+      <div className="mb-4 sm:mb-8">
+        <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">My Applications</h1>
+        <p className="mt-1 sm:mt-2 text-slate-600 text-sm sm:text-base">Track status and notes for each application</p>
       </div>
 
       {applications.length === 0 ? (
@@ -118,9 +118,9 @@ const Applications = () => {
             return (
               <article key={app.id} className="card card-hover p-6">
                 <div className="flex flex-col gap-4">
-                  <div className="flex flex-wrap items-start justify-between gap-4">
+                  <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
                     <div className="min-w-0 flex-1">
-                      <h3 className="text-xl font-bold text-slate-900">{job.title}</h3>
+                      <h3 className="text-lg sm:text-xl font-bold text-slate-900">{job.title}</h3>
                       <div className="flex flex-wrap gap-x-4 gap-y-1 mt-1 text-sm text-slate-600">
                         {job.company && <span className="font-medium text-slate-700">{job.company}</span>}
                         {job.location && <span>{job.location}</span>}
@@ -135,12 +135,12 @@ const Applications = () => {
                         {app.updated_at !== app.applied_at && ` · Updated ${formatDate(app.updated_at)}`}
                       </p>
                     </div>
-                    <div className="flex flex-wrap items-center gap-2">
+                    <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto sm:min-w-[140px]">
                       <select
                         value={app.status}
                         onChange={(e) => handleStatusChange(app.id, e.target.value)}
                         disabled={updating[app.id]}
-                        className="input-field w-auto min-w-[140px] py-2 text-sm"
+                        className="input-field w-full sm:w-auto min-w-0 py-2.5 text-sm min-h-[44px] sm:min-h-0"
                       >
                         {APPLICATION_STATUSES.map((s) => (
                           <option key={s.value} value={s.value}>{s.label}</option>
@@ -151,7 +151,7 @@ const Applications = () => {
                           href={job.url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="btn-primary text-sm py-2"
+                          className="btn-primary text-sm py-2.5 min-h-[44px] sm:min-h-0 w-full sm:w-auto justify-center"
                         >
                           View job
                         </a>

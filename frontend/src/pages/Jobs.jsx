@@ -149,13 +149,13 @@ const Jobs = () => {
 
   return (
     <div className="py-6 animate-fade-in">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Browse Jobs</h1>
-        <p className="mt-2 text-slate-600">Discover opportunities that match your interests</p>
+      <div className="mb-4 sm:mb-6">
+        <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">Browse Jobs</h1>
+        <p className="mt-1 sm:mt-2 text-slate-600 text-sm sm:text-base">Discover opportunities that match your interests</p>
       </div>
 
-      <form onSubmit={handleSearch} className="card p-4 mb-6 flex flex-wrap items-end gap-4">
-        <div className="flex-1 min-w-[180px]">
+      <form onSubmit={handleSearch} className="card p-4 sm:p-5 mb-6 flex flex-col sm:flex-row sm:flex-wrap sm:items-end gap-4">
+        <div className="w-full sm:flex-1 sm:min-w-[180px]">
           <label className="block text-sm font-medium text-slate-700 mb-1">Keyword</label>
           <input
             type="text"
@@ -165,7 +165,7 @@ const Jobs = () => {
             className="input-field"
           />
         </div>
-        <div className="w-48 min-w-[140px]">
+        <div className="w-full sm:w-48 sm:min-w-[140px]">
           <label className="block text-sm font-medium text-slate-700 mb-1">Location</label>
           <input
             type="text"
@@ -175,7 +175,7 @@ const Jobs = () => {
             className="input-field"
           />
         </div>
-        <div className="w-40 min-w-[120px]">
+        <div className="w-full sm:w-40 sm:min-w-[120px]">
           <label className="block text-sm font-medium text-slate-700 mb-1">Job type</label>
           <select
             value={jobType}
@@ -188,7 +188,7 @@ const Jobs = () => {
             ))}
           </select>
         </div>
-        <button type="submit" className="btn-primary">Search</button>
+        <button type="submit" className="btn-primary w-full sm:w-auto">Search</button>
       </form>
 
       {jobs.length === 0 && !loading ? (
@@ -263,7 +263,7 @@ const Jobs = () => {
         </div>
       ) : (
         <>
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
             <p className="text-sm text-slate-600">
               {totalCount > 0 ? `${totalCount} job${totalCount !== 1 ? 's' : ''} found` : 'No jobs match your filters'}
             </p>
@@ -292,7 +292,7 @@ const Jobs = () => {
             ))}
           </div>
           {totalPages > 1 && (
-            <div className="mt-6 flex items-center justify-center gap-4">
+            <div className="mt-6 flex flex-wrap items-center justify-center gap-3 sm:gap-4">
               <button
                 type="button"
                 onClick={() => loadJobs(page - 1)}

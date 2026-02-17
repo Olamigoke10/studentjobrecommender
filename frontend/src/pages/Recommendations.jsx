@@ -64,8 +64,8 @@ const Recommendations = () => {
   if (error) {
     const isProfileError = error.includes('profile');
     return (
-      <div className="py-6 animate-fade-in">
-        <div className={`card p-6 ${isProfileError ? 'border-amber-200 bg-amber-50' : 'border-red-200 bg-red-50'}`}>
+      <div className="py-4 sm:py-6 animate-fade-in">
+        <div className={`card p-4 sm:p-6 ${isProfileError ? 'border-amber-200 bg-amber-50' : 'border-red-200 bg-red-50'}`}>
           <p className={isProfileError ? 'text-amber-800' : 'text-red-800'}>{error}</p>
           {isProfileError ? (
             <Link to={ROUTES.PROFILE} className="btn-primary mt-4 inline-flex">
@@ -82,10 +82,10 @@ const Recommendations = () => {
   }
 
   return (
-    <div className="py-6 animate-fade-in">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-slate-900 tracking-tight">For You</h1>
-        <p className="mt-2 text-slate-600">Jobs matched to your profile and preferences</p>
+    <div className="py-4 sm:py-6 animate-fade-in">
+      <div className="mb-4 sm:mb-8">
+        <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">For You</h1>
+        <p className="mt-1 sm:mt-2 text-slate-600 text-sm sm:text-base">Jobs matched to your profile and preferences</p>
       </div>
 
       {jobs.length === 0 ? (

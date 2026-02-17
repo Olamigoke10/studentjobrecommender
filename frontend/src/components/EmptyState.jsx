@@ -12,7 +12,7 @@ export default function EmptyState({ type = 'jobs', title, description, actionLa
   const icon = iconClass[type] || iconClass.jobs;
   const showAction = actionHref != null || onAction != null;
   return (
-    <div className="card p-12 text-center">
+    <div className="card p-6 sm:p-12 text-center">
       <div className="inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-100 text-slate-400 mb-6">
         <i className={`bx ${icon} text-4xl`} />
       </div>

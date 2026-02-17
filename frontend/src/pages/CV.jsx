@@ -99,14 +99,14 @@ const CV = () => {
   if (loading) return <Loader />;
 
   return (
-    <div className="py-6 animate-fade-in">
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
+    <div className="py-4 sm:py-6 animate-fade-in">
+      <div className="mb-4 sm:mb-6 flex flex-col sm:flex-row sm:flex-wrap sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900 tracking-tight">CV Builder</h1>
-          <p className="mt-2 text-slate-600">Build your CV and export to PDF</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">CV Builder</h1>
+          <p className="mt-1 sm:mt-2 text-slate-600 text-sm sm:text-base">Build your CV and export to PDF</p>
         </div>
-        <div className="flex gap-2 no-print">
-          <button type="button" onClick={handlePrint} className="btn-primary">
+        <div className="flex flex-col sm:flex-row gap-2 no-print w-full sm:w-auto">
+          <button type="button" onClick={handlePrint} className="btn-primary w-full sm:w-auto min-h-[44px]">
             Print / Save as PDF
           </button>
         </div>
@@ -124,9 +124,9 @@ const CV = () => {
         </div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
         <form onSubmit={handleSave} className="space-y-6 no-print">
-          <div className="card p-6">
+          <div className="card p-4 sm:p-6">
             <h2 className="text-lg font-semibold text-slate-900 mb-4">Summary</h2>
             <textarea
               value={summary}
@@ -137,7 +137,7 @@ const CV = () => {
             />
           </div>
 
-          <div className="card p-6">
+          <div className="card p-4 sm:p-6">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-semibold text-slate-900">Education</h2>
               <button type="button" onClick={addEducation} className="text-sm font-medium text-primary-600 hover:text-primary-700">+ Add</button>
@@ -152,11 +152,11 @@ const CV = () => {
                     )}
                   </div>
                   <input type="text" value={e.institution} onChange={(ev) => updateEducation(i, 'institution', ev.target.value)} placeholder="Institution" className="input-field" />
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     <input type="text" value={e.degree} onChange={(ev) => updateEducation(i, 'degree', ev.target.value)} placeholder="Degree (e.g. BSc)" className="input-field" />
                     <input type="text" value={e.subject} onChange={(ev) => updateEducation(i, 'subject', ev.target.value)} placeholder="Subject" className="input-field" />
                   </div>
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     <input type="text" value={e.start_date} onChange={(ev) => updateEducation(i, 'start_date', ev.target.value)} placeholder="Start (e.g. 2020)" className="input-field" />
                     <input type="text" value={e.end_date} onChange={(ev) => updateEducation(i, 'end_date', ev.target.value)} placeholder="End (e.g. 2024)" className="input-field" />
                   </div>
@@ -166,7 +166,7 @@ const CV = () => {
             </div>
           </div>
 
-          <div className="card p-6">
+          <div className="card p-4 sm:p-6">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-semibold text-slate-900">Experience</h2>
               <button type="button" onClick={addExperience} className="text-sm font-medium text-primary-600 hover:text-primary-700">+ Add</button>
@@ -182,7 +182,7 @@ const CV = () => {
                   </div>
                   <input type="text" value={x.company} onChange={(ev) => updateExperience(i, 'company', ev.target.value)} placeholder="Company" className="input-field" />
                   <input type="text" value={x.role} onChange={(ev) => updateExperience(i, 'role', ev.target.value)} placeholder="Role" className="input-field" />
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     <input type="text" value={x.start_date} onChange={(ev) => updateExperience(i, 'start_date', ev.target.value)} placeholder="Start" className="input-field" />
                     <input type="text" value={x.end_date} onChange={(ev) => updateExperience(i, 'end_date', ev.target.value)} placeholder="End" className="input-field" />
                   </div>
@@ -192,13 +192,13 @@ const CV = () => {
             </div>
           </div>
 
-          <button type="submit" disabled={saving} className="btn-primary px-8 py-3 disabled:opacity-50">
+          <button type="submit" disabled={saving} className="btn-primary w-full sm:w-auto min-h-[44px] px-6 sm:px-8 py-3 disabled:opacity-50">
             {saving ? 'Saving…' : 'Save CV'}
           </button>
         </form>
 
         <div className="lg:sticky lg:top-24 print:static">
-          <div className="card p-6 print:shadow-none print:border-0">
+          <div className="card p-4 sm:p-6 print:shadow-none print:border-0">
             <p className="text-sm font-medium text-slate-500 mb-2 print:hidden">Preview</p>
             <div id="cv-preview" className="bg-white text-slate-800 text-sm print:text-black">
               {previewData && (
