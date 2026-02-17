@@ -68,7 +68,7 @@ class CVView(views.APIView):
             "course": profile.course or "",
             "skills": skills,
             "email": request.user.email,
-            "name": (getattr(request.user, "first_name", "") or "").strip() or None,
+            "name": (profile.name or "").strip() or None,
             "education": EducationSerializer(education, many=True).data,
             "experience": ExperienceSerializer(experience, many=True).data,
         })
@@ -115,7 +115,7 @@ class CVView(views.APIView):
             "course": profile.course or "",
             "skills": skills,
             "email": request.user.email,
-            "name": (getattr(request.user, "first_name", "") or "").strip() or None,
+            "name": (profile.name or "").strip() or None,
             "education": EducationSerializer(education, many=True).data,
             "experience": ExperienceSerializer(experience, many=True).data,
         }, status=status.HTTP_200_OK)

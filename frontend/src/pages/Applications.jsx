@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { jobsAPI } from '../api/jobs.api';
 import Loader from '../components/Loader';
+import ErrorState from '../components/ErrorState';
 import { ROUTES, APPLICATION_STATUSES } from '../utils/constants';
 
 const formatDate = (dateString) => {
@@ -83,12 +84,7 @@ const Applications = () => {
   if (error) {
     return (
       <div className="py-6 animate-fade-in">
-        <div className="card p-6 border-red-200 bg-red-50">
-          <p className="text-red-800 font-medium">{error}</p>
-          <button onClick={loadApplications} className="btn-secondary mt-4 border-red-200 text-red-700 hover:bg-red-100">
-            Try again
-          </button>
-        </div>
+        <ErrorState message={error} onRetry={loadApplications} />
       </div>
     );
   }
@@ -103,9 +99,7 @@ const Applications = () => {
       {applications.length === 0 ? (
         <div className="card p-12 text-center">
           <div className="inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-primary-100 text-primary-600 mb-6">
-            <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
-            </svg>
+            <i className="bx bx-clipboard text-4xl" />
           </div>
           <h3 className="text-lg font-semibold text-slate-900">No applications yet</h3>
           <p className="mt-2 text-slate-600 text-sm max-w-sm mx-auto">

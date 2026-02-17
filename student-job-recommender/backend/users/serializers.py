@@ -8,10 +8,12 @@ User = get_user_model()
 
 class RegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, min_length=8)
+    name = serializers.CharField(required=False, allow_blank=True, max_length=150)
+    course = serializers.CharField(required=False, allow_blank=True, max_length=150)
 
     class Meta:
         model = User
-        fields = ["email", "password"]
+        fields = ["email", "password", "name", "course"]
 
     def validate_email(self, value):
         value = value.strip().lower()
@@ -23,20 +25,17 @@ class RegisterSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         email = validated_data["email"]
         password = validated_data["password"]
+        name = (validated_data.get("name") or "").strip()
+        course = (validated_data.get("course") or "").strip() or "Not Specified"
 
-        # ✅ IMPORTANT: username must match email for SimpleJWT login consistency
         user = User(email=email, username=email)
         user.set_password(password)
         user.save()
-
-        StudentProfile.objects.get_or_create(
-            user=user,
-            defaults={
-                "course": "Not Specified",
-                "preferred_job_type": "graduate",
-                "preferred_location": "Not Specified",
-            },
-        )
+        # Signal creates StudentProfile; update with name/course from registration
+        profile = StudentProfile.objects.get(user=user)
+        profile.name = name
+        profile.course = course
+        profile.save(update_fields=["name", "course"])
 
         return user
 
@@ -59,7 +58,7 @@ class StudentProfileSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = StudentProfile
-        fields = ["email", "skills", "skills_ids", "preferred_job_type", "preferred_location", "course", "cv_summary"]
+        fields = ["email", "name", "skills", "skills_ids", "preferred_job_type", "preferred_location", "course", "cv_summary"]
 
     def update(self, instance, validated_data):
         skills_ids = validated_data.pop("skills_ids", None)

@@ -20,6 +20,7 @@ const Profile = () => {
   const [skills, setSkills] = useState([]);
   
   const [formData, setFormData] = useState({
+    name: '',
     course: '',
     preferred_job_type: 'graduate',
     preferred_location: '',
@@ -41,6 +42,7 @@ const Profile = () => {
   useEffect(() => {
     if (user) {
       setFormData({
+        name: user.name || '',
         course: user.course || '',
         preferred_job_type: user.preferred_job_type || 'graduate',
         preferred_location: user.preferred_location || '',
@@ -134,6 +136,20 @@ const Profile = () => {
       <div className="card p-6 sm:p-8">
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
+            <label htmlFor="name" className="block text-sm font-semibold text-slate-700 mb-1.5">
+              Display name
+            </label>
+            <input
+              type="text"
+              id="name"
+              name="name"
+              value={formData.name}
+              onChange={handleChange}
+              className="input-field"
+              placeholder="e.g. Alex"
+            />
+          </div>
+          <div>
             <label htmlFor="course" className="block text-sm font-semibold text-slate-700 mb-1.5">
               Course / field of study
             </label>
@@ -221,7 +237,8 @@ const Profile = () => {
             </div>
           )}
           {success && (
-            <div className="rounded-xl bg-emerald-50 border border-emerald-100 px-4 py-3">
+            <div className="rounded-xl bg-emerald-50 border border-emerald-200 px-4 py-3 flex items-center gap-2">
+              <i className="bx bx-check-circle text-emerald-600 text-xl flex-shrink-0" />
               <p className="text-sm font-medium text-emerald-800">Profile updated successfully.</p>
             </div>
           )}
@@ -230,10 +247,7 @@ const Profile = () => {
             <button type="submit" disabled={saving} className="btn-primary px-8 py-3 disabled:opacity-50 disabled:cursor-not-allowed">
               {saving ? (
                 <span className="flex items-center gap-2">
-                  <svg className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                  </svg>
+                  <i className="bx bx-loader-alt bx-spin text-xl" />
                   Saving...
                 </span>
               ) : (

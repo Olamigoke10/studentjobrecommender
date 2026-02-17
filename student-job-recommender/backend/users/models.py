@@ -31,6 +31,7 @@ class StudentProfile(models.Model):
     ]
 
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="profile")
+    name = models.CharField(max_length=150, blank=True)
     skills = models.ManyToManyField(Skill, related_name="students", blank=True)
 
     preferred_job_type = models.CharField(

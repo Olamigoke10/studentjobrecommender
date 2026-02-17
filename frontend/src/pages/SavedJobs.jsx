@@ -3,6 +3,7 @@ import { jobsAPI } from '../api/jobs.api';
 import Loader from '../components/Loader';
 import JobCard from '../components/JobCard';
 import EmptyState from '../components/EmptyState';
+import ErrorState from '../components/ErrorState';
 import { ROUTES } from '../utils/constants';
 
 const SavedJobs = () => {
@@ -59,12 +60,7 @@ const SavedJobs = () => {
   if (error) {
     return (
       <div className="py-6 animate-fade-in">
-        <div className="card p-6 border-red-200 bg-red-50">
-          <p className="text-red-800 font-medium">{error}</p>
-          <button onClick={loadSavedJobs} className="btn-secondary mt-4 border-red-200 text-red-700 hover:bg-red-100">
-            Try again
-          </button>
-        </div>
+        <ErrorState message={error} onRetry={loadSavedJobs} />
       </div>
     );
   }
