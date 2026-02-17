@@ -1,18 +1,7 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
-from django.utils.text import slugify
 from django.db import transaction
-import uuid
-
-from .models import StudentProfile, Skill
-
-User = get_user_model()
-
-
-from rest_framework import serializers
-from django.contrib.auth import get_user_model
-from django.db import transaction
-from .models import StudentProfile, Skill
+from .models import StudentProfile, Skill, Education, Experience
 
 User = get_user_model()
 
@@ -70,7 +59,7 @@ class StudentProfileSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = StudentProfile
-        fields = ["email", "skills", "skills_ids", "preferred_job_type", "preferred_location", "course"]
+        fields = ["email", "skills", "skills_ids", "preferred_job_type", "preferred_location", "course", "cv_summary"]
 
     def update(self, instance, validated_data):
         skills_ids = validated_data.pop("skills_ids", None)
@@ -84,3 +73,22 @@ class StudentProfileSerializer(serializers.ModelSerializer):
 
         instance.save()
         return instance
+
+
+class EducationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Education
+        fields = ["id", "institution", "degree", "subject", "start_date", "end_date", "description", "order"]
+
+
+class ExperienceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Experience
+        fields = ["id", "company", "role", "start_date", "end_date", "description", "order"]
+
+
+class CVSerializer(serializers.Serializer):
+    """Read: full CV data. Write: summary + education + experience lists."""
+    summary = serializers.CharField(required=False, allow_blank=True)
+    education = EducationSerializer(many=True, required=False)
+    experience = ExperienceSerializer(many=True, required=False)

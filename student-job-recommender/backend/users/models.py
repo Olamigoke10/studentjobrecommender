@@ -38,9 +38,39 @@ class StudentProfile(models.Model):
     )
     preferred_location = models.CharField(max_length=150, blank=True)
     course = models.CharField(max_length=150, blank=True)
+    cv_summary = models.TextField(blank=True, help_text="Personal statement / summary for CV")
 
     def __str__(self):
         return f"{self.user.email} - {self.course}"
+
+
+class Education(models.Model):
+    """CV education entry."""
+    student = models.ForeignKey(StudentProfile, on_delete=models.CASCADE, related_name="cv_education")
+    institution = models.CharField(max_length=200)
+    degree = models.CharField(max_length=100, blank=True)  # e.g. BSc, BA, MSc
+    subject = models.CharField(max_length=200, blank=True)  # e.g. Computer Science
+    start_date = models.CharField(max_length=50, blank=True)  # e.g. 2020 or Sept 2020
+    end_date = models.CharField(max_length=50, blank=True)
+    description = models.TextField(blank=True)
+    order = models.PositiveSmallIntegerField(default=0)
+
+    class Meta:
+        ordering = ["order", "-id"]
+
+
+class Experience(models.Model):
+    """CV work / voluntary experience entry."""
+    student = models.ForeignKey(StudentProfile, on_delete=models.CASCADE, related_name="cv_experience")
+    company = models.CharField(max_length=200)
+    role = models.CharField(max_length=200)
+    start_date = models.CharField(max_length=50, blank=True)
+    end_date = models.CharField(max_length=50, blank=True)
+    description = models.TextField(blank=True)
+    order = models.PositiveSmallIntegerField(default=0)
+
+    class Meta:
+        ordering = ["order", "-id"]
 
 
         

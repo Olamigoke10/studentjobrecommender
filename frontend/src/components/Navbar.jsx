@@ -9,6 +9,7 @@ const navLinks = [
   { to: ROUTES.SAVED_JOBS, label: 'Saved' },
   { to: ROUTES.APPLICATIONS, label: 'Applications' },
   { to: ROUTES.RECOMMENDATIONS, label: 'For You' },
+  { to: ROUTES.CV, label: 'My CV' },
   { to: ROUTES.PROFILE, label: 'Profile' },
 ];
 

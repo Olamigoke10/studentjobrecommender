@@ -7,6 +7,7 @@ export const ROUTES = {
   APPLICATIONS: '/applications',
   RECOMMENDATIONS: '/recommendations',
   PROFILE: '/profile',
+  CV: '/cv',
 };
 
 export const APPLICATION_STATUSES = [

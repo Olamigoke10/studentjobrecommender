@@ -151,18 +151,31 @@ if 'RENDER' in os.environ:
         )
     }
 else:
-    # Local development - use .env file with python-decouple
-    print("💻 Running locally - using .env file", file=sys.stderr)
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': config('DB_NAME'),
-            'USER': config('DB_USER'),
-            'PASSWORD': config('DB_PASSWORD'),
-            'HOST': config('DB_HOST', default='localhost'),
-            'PORT': config('DB_PORT', default='5432'),
+    # Local development
+    print("💻 Running locally", file=sys.stderr)
+    # Use SQLite by default so migrate/runserver work without a local Postgres or .env DB vars.
+    # Set USE_POSTGRES_LOCAL=true in .env to use PostgreSQL locally (DB_NAME, DB_USER, DB_PASSWORD, DB_HOST, DB_PORT).
+    use_postgres_local = config('USE_POSTGRES_LOCAL', default=False, cast=bool)
+    if use_postgres_local:
+        print("   Using PostgreSQL from .env (DB_*)", file=sys.stderr)
+        DATABASES = {
+            'default': {
+                'ENGINE': 'django.db.backends.postgresql',
+                'NAME': config('DB_NAME'),
+                'USER': config('DB_USER'),
+                'PASSWORD': config('DB_PASSWORD'),
+                'HOST': config('DB_HOST', default='localhost'),
+                'PORT': config('DB_PORT', default='5432'),
+            }
         }
-    }
+    else:
+        print("   Using SQLite (set USE_POSTGRES_LOCAL=true to use local PostgreSQL)", file=sys.stderr)
+        DATABASES = {
+            'default': {
+                'ENGINE': 'django.db.backends.sqlite3',
+                'NAME': BASE_DIR / 'db.sqlite3',
+            }
+        }
 
 # print(f"✅ Database configured. Host: {DATABASES['default'].get('HOST', 'Not set')}", file=sys.stderr)
 

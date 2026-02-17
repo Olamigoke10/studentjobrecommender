@@ -21,4 +21,10 @@ export const authAPI = {
 
   getCourses: () =>
     axiosInstance.get('/api/users/courses/'),
+
+  getCV: () =>
+    axiosInstance.get('/api/users/me/cv/'),
+
+  updateCV: (data) =>
+    axiosInstance.put('/api/users/me/cv/', data),
 };

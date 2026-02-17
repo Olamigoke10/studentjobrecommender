@@ -10,6 +10,7 @@ import SavedJobs from './pages/SavedJobs';
 import Recommendations from './pages/Recommendations';
 import Profile from './pages/Profile';
 import Applications from './pages/Applications';
+import CV from './pages/CV';
 import { ROUTES } from './utils/constants'
 
 function App() {
@@ -73,6 +74,14 @@ function App() {
                 element={
                   <ProtectedRoute>
                     <Profile />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path={ROUTES.CV}
+                element={
+                  <ProtectedRoute>
+                    <CV />
                   </ProtectedRoute>
                 }
               />

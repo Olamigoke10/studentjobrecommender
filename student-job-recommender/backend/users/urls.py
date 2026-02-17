@@ -5,6 +5,7 @@ from .views import (
     StudentProfileView,
     SkillListView,
     CourseListView,
+    CVView,
 )
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
@@ -18,6 +19,7 @@ urlpatterns = [
     path("me/", StudentProfileView.as_view(), name="student_profile"),
     path("skills/", SkillListView.as_view(), name="skill_list"),
     path("courses/", CourseListView.as_view(), name="course_list"),
+    path("me/cv/", CVView.as_view(), name="cv"),
 ]
 
 
