@@ -105,7 +105,8 @@ const Profile = () => {
     setSuccess(false);
 
     try {
-      const response = await authAPI.updateProfile(formData);
+      await authAPI.updateProfile(formData);
+      const response = await authAPI.getProfile();
       updateUser(response.data);
       setSuccess(true);
       setTimeout(() => setSuccess(false), 3000);

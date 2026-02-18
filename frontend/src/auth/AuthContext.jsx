@@ -125,7 +125,7 @@ const login = async (email, password) => {
   };
 
   const updateUser = (updatedUser) => {
-    setUser(updatedUser);
+    setUser((prev) => (prev ? { ...prev, ...updatedUser } : updatedUser));
   };
 
   const value = {
