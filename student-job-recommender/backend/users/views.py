@@ -121,3 +121,85 @@ class CVView(views.APIView):
         }, status=status.HTTP_200_OK)
 
 
+def _build_cv_context(education_data, experience_data):
+    """Build a short text context from education and experience for the AI prompt."""
+    parts = []
+    if education_data:
+        parts.append("Education:")
+        for e in education_data:
+            if e.get("institution") or e.get("degree") or e.get("subject"):
+                line = " - "
+                if e.get("degree") and e.get("subject"):
+                    line += f"{e.get('degree')} {e.get('subject')}"
+                else:
+                    line += e.get("degree") or e.get("subject") or ""
+                if e.get("institution"):
+                    line += f" at {e.get('institution')}"
+                if e.get("start_date") or e.get("end_date"):
+                    line += f" ({e.get('start_date', '')} – {e.get('end_date', '')})"
+                if e.get("description"):
+                    line += f". {e.get('description')}"
+                parts.append(line)
+    if experience_data:
+        parts.append("Experience:")
+        for x in experience_data:
+            if x.get("company") or x.get("role"):
+                line = f" - {x.get('role', '')} at {x.get('company', '')}"
+                if x.get("start_date") or x.get("end_date"):
+                    line += f" ({x.get('start_date', '')} – {x.get('end_date', '')})"
+                if x.get("description"):
+                    line += f". {x.get('description')}"
+                parts.append(line)
+    return "\n".join(parts) if parts else "No education or experience listed yet."
+
+
+class CVAISummaryView(views.APIView):
+    """POST: generate a professional CV summary using AI from education + experience."""
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        import os
+        api_key = os.environ.get("OPENAI_API_KEY")
+        if not api_key:
+            return Response(
+                {"detail": "AI summary is not configured. Add OPENAI_API_KEY on the server."},
+                status=status.HTTP_503_SERVICE_UNAVAILABLE,
+            )
+        education_data = request.data.get("education") or []
+        experience_data = request.data.get("experience") or []
+        current_summary = (request.data.get("current_summary") or "").strip()
+        context = _build_cv_context(education_data, experience_data)
+        if not context or context == "No education or experience listed yet.":
+            return Response(
+                {"detail": "Add at least one education or experience entry so we can generate a summary."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        try:
+            from openai import OpenAI
+            client = OpenAI(api_key=api_key)
+            prompt = f"""You are a professional CV writer for students and graduates. Based on the following CV information, write a short professional summary (2–4 sentences) suitable for a CV. Be concise, positive, and focus on strengths and goals. Write only the summary, no headings or labels.
+
+CV information:
+{context}
+"""
+            if current_summary:
+                prompt += f"\nCurrent summary (they can keep or replace): {current_summary}\n"
+            response = client.chat.completions.create(
+                model="gpt-4o-mini",
+                messages=[{"role": "user", "content": prompt}],
+                max_tokens=200,
+            )
+            summary = (response.choices[0].message.content or "").strip()
+            if not summary:
+                return Response(
+                    {"detail": "AI did not return a summary. Please try again."},
+                    status=status.HTTP_502_BAD_GATEWAY,
+                )
+            return Response({"summary": summary}, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response(
+                {"detail": f"AI summary failed: {str(e)}"},
+                status=status.HTTP_502_BAD_GATEWAY,
+            )
+
+

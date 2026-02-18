@@ -17,6 +17,9 @@ const CV = () => {
   const [education, setEducation] = useState([emptyEducation()]);
   const [experience, setExperience] = useState([emptyExperience()]);
   const [previewData, setPreviewData] = useState(null);
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiError, setAiError] = useState(null);
+  const [aiGeneratedSummary, setAiGeneratedSummary] = useState(null);
 
   useEffect(() => {
     loadCV();
@@ -97,6 +100,36 @@ const CV = () => {
     window.print();
   };
 
+  const handleGenerateSummary = async () => {
+    setAiError(null);
+    setAiGeneratedSummary(null);
+    const hasContent = education.some(e => e.institution || e.degree || e.subject) || experience.some(x => x.company || x.role);
+    if (!hasContent) {
+      setAiError('Add at least one education or experience entry first.');
+      return;
+    }
+    setAiLoading(true);
+    try {
+      const res = await authAPI.generateCVSummary({
+        education: education.filter(e => e.institution || e.degree || e.subject),
+        experience: experience.filter(x => x.company || x.role),
+        current_summary: summary || undefined,
+      });
+      setAiGeneratedSummary(res.data.summary || '');
+    } catch (err) {
+      const msg = err.response?.data?.detail || err.response?.data?.message || 'Failed to generate summary. Try again.';
+      setAiError(msg);
+    } finally {
+      setAiLoading(false);
+    }
+  };
+
+  const useGeneratedSummary = () => {
+    if (aiGeneratedSummary) setSummary(aiGeneratedSummary);
+    setAiGeneratedSummary(null);
+    setAiError(null);
+  };
+
   if (loading) return <Loader />;
 
   return (
@@ -129,11 +162,48 @@ const CV = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
         <form onSubmit={handleSave} className="space-y-6 no-print">
           <div className="card p-4 sm:p-6">
-            <h2 className="text-lg font-semibold text-slate-900 mb-4">Summary</h2>
+            <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
+              <h2 className="text-lg font-semibold text-slate-900">Summary</h2>
+              <button
+                type="button"
+                onClick={handleGenerateSummary}
+                disabled={aiLoading || (!education.some(e => e.institution || e.degree || e.subject) && !experience.some(x => x.company || x.role))}
+                className="text-sm font-medium text-primary-600 hover:text-primary-700 disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center gap-1.5"
+              >
+                {aiLoading ? (
+                  <>
+                    <i className="bx bx-loader-alt bx-spin text-lg" />
+                    Generating…
+                  </>
+                ) : (
+                  <>
+                    <i className="bx bx-bulb text-lg" />
+                    Generate with AI
+                  </>
+                )}
+              </button>
+            </div>
+            {aiError && (
+              <p className="text-sm text-amber-700 bg-amber-50 rounded-lg px-3 py-2 mb-3">{aiError}</p>
+            )}
+            {aiGeneratedSummary && (
+              <div className="mb-4 p-4 rounded-xl border border-primary-200 bg-primary-50/50">
+                <p className="text-xs font-semibold text-primary-800 mb-2">Suggested summary</p>
+                <p className="text-sm text-slate-700 whitespace-pre-wrap mb-3">{aiGeneratedSummary}</p>
+                <div className="flex gap-2">
+                  <button type="button" onClick={useGeneratedSummary} className="btn-primary text-sm py-2">
+                    Use this
+                  </button>
+                  <button type="button" onClick={() => { setAiGeneratedSummary(null); setAiError(null); }} className="btn-secondary text-sm py-2">
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            )}
             <textarea
               value={summary}
               onChange={(e) => setSummary(e.target.value)}
-              placeholder="Short personal statement (2–4 sentences)"
+              placeholder="Short personal statement (2–4 sentences). Add education/experience above, then try Generate with AI."
               rows={4}
               className="input-field resize-none"
             />

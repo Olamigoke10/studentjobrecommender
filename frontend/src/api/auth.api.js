@@ -27,4 +27,7 @@ export const authAPI = {
 
   updateCV: (data) =>
     axiosInstance.put('/api/users/me/cv/', data),
+
+  generateCVSummary: (data) =>
+    axiosInstance.post('/api/users/me/cv/ai-summary/', data),
 };
