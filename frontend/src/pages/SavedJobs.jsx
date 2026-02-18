@@ -4,6 +4,7 @@ import Loader from '../components/Loader';
 import JobCard from '../components/JobCard';
 import EmptyState from '../components/EmptyState';
 import ErrorState from '../components/ErrorState';
+import BackButton from '../components/BackButton';
 import { ROUTES } from '../utils/constants';
 
 const SavedJobs = () => {
@@ -59,7 +60,8 @@ const SavedJobs = () => {
 
   if (error) {
     return (
-      <div className="py-6 animate-fade-in">
+      <div className="py-4 sm:py-6 animate-fade-in">
+        <BackButton className="mb-4" />
         <ErrorState message={error} onRetry={loadSavedJobs} />
       </div>
     );
@@ -67,6 +69,7 @@ const SavedJobs = () => {
 
   return (
     <div className="py-4 sm:py-6 animate-fade-in">
+      <BackButton className="mb-4" />
       <div className="mb-4 sm:mb-8">
         <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">Saved Jobs</h1>
         <p className="mt-1 sm:mt-2 text-slate-600 text-sm sm:text-base">Your saved opportunities</p>

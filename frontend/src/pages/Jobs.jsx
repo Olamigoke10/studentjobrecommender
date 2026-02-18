@@ -3,6 +3,7 @@ import { jobsAPI } from '../api/jobs.api';
 import Loader from '../components/Loader';
 import JobCard from '../components/JobCard';
 import ErrorState from '../components/ErrorState';
+import BackButton from '../components/BackButton';
 import { JOB_TYPES } from '../utils/constants';
 
 const PAGE_SIZE = 20;
@@ -141,14 +142,16 @@ const Jobs = () => {
 
   if (error) {
     return (
-      <div className="py-6 animate-fade-in">
+      <div className="py-4 sm:py-6 animate-fade-in">
+        <BackButton className="mb-4" />
         <ErrorState message={error} onRetry={() => loadJobs(1)} />
       </div>
     );
   }
 
   return (
-    <div className="py-6 animate-fade-in">
+    <div className="py-4 sm:py-6 animate-fade-in">
+      <BackButton className="mb-4" />
       <div className="mb-4 sm:mb-6">
         <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">Browse Jobs</h1>
         <p className="mt-1 sm:mt-2 text-slate-600 text-sm sm:text-base">Discover opportunities that match your interests</p>

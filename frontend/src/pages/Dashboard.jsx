@@ -5,6 +5,7 @@ import { jobsAPI } from '../api/jobs.api';
 import { recommendationsAPI } from '../api/recommendations.api';
 import { ROUTES } from '../utils/constants';
 import Loader from '../components/Loader';
+import BackButton from '../components/BackButton';
 
 const statCards = [
   { key: 'applied', label: 'Jobs Applied', valueKey: 'applications', icon: 'bx-briefcase', color: 'primary', href: ROUTES.APPLICATIONS },
@@ -63,6 +64,7 @@ const Dashboard = () => {
 
   return (
     <div className="py-4 sm:py-6 animate-fade-in">
+      <BackButton className="mb-4" />
       <div className="mb-6 sm:mb-10">
         <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">
           Welcome back, {user?.name || user?.email?.split('@')[0] || 'Student'}

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { authAPI } from '../api/auth.api';
 import { useAuth } from '../auth/AuthContext';
 import Loader from '../components/Loader';
+import BackButton from '../components/BackButton';
 import { COURSES as FALLBACK_COURSES } from '../utils/constants';
 
 const JOB_TYPES = [
@@ -127,6 +128,7 @@ const Profile = () => {
 
   return (
     <div className="py-4 sm:py-6 animate-fade-in">
+      <BackButton className="mb-4" />
       <div className="mb-4 sm:mb-8">
         <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">Profile</h1>
         <p className="mt-1 sm:mt-2 text-slate-600 text-sm sm:text-base">

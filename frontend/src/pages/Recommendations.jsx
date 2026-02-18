@@ -5,6 +5,7 @@ import { jobsAPI } from '../api/jobs.api';
 import Loader from '../components/Loader';
 import JobCard from '../components/JobCard';
 import EmptyState from '../components/EmptyState';
+import BackButton from '../components/BackButton';
 import { ROUTES } from '../utils/constants';
 
 const Recommendations = () => {
@@ -65,6 +66,7 @@ const Recommendations = () => {
     const isProfileError = error.includes('profile');
     return (
       <div className="py-4 sm:py-6 animate-fade-in">
+        <BackButton className="mb-4" />
         <div className={`card p-4 sm:p-6 ${isProfileError ? 'border-amber-200 bg-amber-50' : 'border-red-200 bg-red-50'}`}>
           <p className={isProfileError ? 'text-amber-800' : 'text-red-800'}>{error}</p>
           {isProfileError ? (
@@ -83,6 +85,7 @@ const Recommendations = () => {
 
   return (
     <div className="py-4 sm:py-6 animate-fade-in">
+      <BackButton className="mb-4" />
       <div className="mb-4 sm:mb-8">
         <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">For You</h1>
         <p className="mt-1 sm:mt-2 text-slate-600 text-sm sm:text-base">Jobs matched to your profile and preferences</p>

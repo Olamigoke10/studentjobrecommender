@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { jobsAPI } from '../api/jobs.api';
 import Loader from '../components/Loader';
 import ErrorState from '../components/ErrorState';
+import BackButton from '../components/BackButton';
 import { ROUTES, APPLICATION_STATUSES } from '../utils/constants';
 
 const formatDate = (dateString) => {
@@ -83,7 +84,8 @@ const Applications = () => {
 
   if (error) {
     return (
-      <div className="py-6 animate-fade-in">
+      <div className="py-4 sm:py-6 animate-fade-in">
+        <BackButton className="mb-4" />
         <ErrorState message={error} onRetry={loadApplications} />
       </div>
     );
@@ -91,6 +93,7 @@ const Applications = () => {
 
   return (
     <div className="py-4 sm:py-6 animate-fade-in">
+      <BackButton className="mb-4" />
       <div className="mb-4 sm:mb-8">
         <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">My Applications</h1>
         <p className="mt-1 sm:mt-2 text-slate-600 text-sm sm:text-base">Track status and notes for each application</p>

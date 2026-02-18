@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../auth/AuthContext';
 import { authAPI } from '../api/auth.api';
 import Loader from '../components/Loader';
+import BackButton from '../components/BackButton';
 
 const emptyEducation = () => ({ institution: '', degree: '', subject: '', start_date: '', end_date: '', description: '' });
 const emptyExperience = () => ({ company: '', role: '', start_date: '', end_date: '', description: '' });
@@ -100,6 +101,7 @@ const CV = () => {
 
   return (
     <div className="py-4 sm:py-6 animate-fade-in">
+      <BackButton className="mb-4" />
       <div className="mb-4 sm:mb-6 flex flex-col sm:flex-row sm:flex-wrap sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">CV Builder</h1>
