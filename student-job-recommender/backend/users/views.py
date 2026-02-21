@@ -197,8 +197,19 @@ CV information:
                 )
             return Response({"summary": summary}, status=status.HTTP_200_OK)
         except Exception as e:
+            err_str = str(e).lower()
+            if "429" in err_str or "quota" in err_str or "insufficient_quota" in err_str:
+                return Response(
+                    {"detail": "AI service limit reached. Check your OpenAI plan and billing at platform.openai.com, or try again later."},
+                    status=status.HTTP_502_BAD_GATEWAY,
+                )
+            if "rate" in err_str or "limit" in err_str:
+                return Response(
+                    {"detail": "AI is busy. Please wait a moment and try again."},
+                    status=status.HTTP_502_BAD_GATEWAY,
+                )
             return Response(
-                {"detail": f"AI summary failed: {str(e)}"},
+                {"detail": "AI summary is temporarily unavailable. Please try again later."},
                 status=status.HTTP_502_BAD_GATEWAY,
             )
 

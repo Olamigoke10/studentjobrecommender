@@ -117,7 +117,14 @@ const CV = () => {
       });
       setAiGeneratedSummary(res.data.summary || '');
     } catch (err) {
-      const msg = err.response?.data?.detail || err.response?.data?.message || 'Failed to generate summary. Try again.';
+      let msg = err.response?.data?.detail || err.response?.data?.message || 'Failed to generate summary. Try again.';
+      if (typeof msg === 'string' && (msg.includes('429') || msg.toLowerCase().includes('quota') || msg.length > 200)) {
+        if (msg.toLowerCase().includes('quota') || msg.includes('429')) {
+          msg = 'AI limit reached. Add billing at platform.openai.com or try again later.';
+        } else {
+          msg = 'AI summary is temporarily unavailable. Please try again later.';
+        }
+      }
       setAiError(msg);
     } finally {
       setAiLoading(false);
