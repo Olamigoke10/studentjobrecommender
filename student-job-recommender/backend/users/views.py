@@ -15,6 +15,7 @@ from .serializers import (
 )
 from .models import StudentProfile, Skill, Education, Experience
 from .token import EmailTokenObtainPairSerializer
+from jobs.models import Job
 from rest_framework_simplejwt.views import TokenObtainPairView
 
 class RegisterView(generics.CreateAPIView):
@@ -168,20 +169,40 @@ class CVAISummaryView(views.APIView):
         education_data = request.data.get("education") or []
         experience_data = request.data.get("experience") or []
         current_summary = (request.data.get("current_summary") or "").strip()
+        job_id = request.data.get("job_id")
         context = _build_cv_context(education_data, experience_data)
         if not context or context == "No education or experience listed yet.":
             return Response(
                 {"detail": "Add at least one education or experience entry so we can generate a summary."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
+        job_context = ""
+        if job_id:
+            job = Job.objects.filter(id=job_id).first()
+            if job:
+                desc = (job.description or "")[:800]
+                job_context = (
+                    f"\n\nTarget job:\n"
+                    f"Title: {job.title}\n"
+                    f"Company: {job.company or 'N/A'}\n"
+                    f"Location: {job.location or 'N/A'}\n"
+                    f"Type: {job.job_type or 'N/A'}\n"
+                    f"Description: {desc}\n"
+                )
         try:
             from openai import OpenAI
             client = OpenAI(api_key=api_key)
-            prompt = f"""You are a professional CV writer for students and graduates. Based on the following CV information, write a short professional summary (2–4 sentences) suitable for a CV. Be concise, positive, and focus on strengths and goals. Write only the summary, no headings or labels.
-
-CV information:
-{context}
-"""
+            prompt = (
+                "You are a professional CV writer for students and graduates. "
+                "Based on the following CV information, write a short professional summary (2–4 sentences) "
+                "suitable for a CV. Be concise, positive, and focus on strengths and goals. "
+                "Write only the summary, no headings or labels."
+            )
+            if job_context:
+                prompt += (
+                    " Tailor the summary towards the following target job, but keep it reusable for similar roles."
+                )
+            prompt += f"\n\nCV information:\n{context}{job_context}\n"
             if current_summary:
                 prompt += f"\nCurrent summary (they can keep or replace): {current_summary}\n"
             response = client.chat.completions.create(

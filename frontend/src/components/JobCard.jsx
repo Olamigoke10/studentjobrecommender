@@ -1,4 +1,6 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
+import { ROUTES } from '../utils/constants';
 
 const formatDate = (dateString) => {
   if (!dateString) return null;
@@ -17,6 +19,7 @@ export default function JobCard({
   recommendedReason = null,
   variant = 'default', // 'default' | 'saved' | 'recommendation'
 }) {
+  const navigate = useNavigate();
   const descriptionSnippet = job.description
     ? job.description.substring(0, 220) + (job.description.length > 220 ? '...' : '')
     : null;
@@ -86,6 +89,14 @@ export default function JobCard({
               <i className="bx bx-link-external ml-1.5 text-base" />
             </a>
           )}
+          <button
+            type="button"
+            onClick={() => navigate(`${ROUTES.CV}?jobId=${job.id}`)}
+            className="w-full sm:w-auto justify-center inline-flex items-center px-5 py-2.5 rounded-xl text-sm font-semibold border border-primary-200 bg-primary-50 text-primary-700 hover:bg-primary-100 transition-all duration-200"
+          >
+            Build CV for this job
+            <i className="bx bx-file ml-1.5 text-base" />
+          </button>
           {variant === 'saved' ? (
             <button
               onClick={() => onUnsave(job.id)}

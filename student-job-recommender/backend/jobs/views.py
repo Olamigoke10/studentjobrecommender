@@ -21,7 +21,7 @@ class JobListView(generics.ListAPIView):
     pagination_class = JobListPagination
 
     def get_queryset(self):
-        qs = Job.objects.all().order_by("-cached_at")
+        qs = Job.objects.all().order_by("-posted_date", "-cached_at")
         search = (self.request.query_params.get("search") or "").strip()
         location = (self.request.query_params.get("location") or "").strip()
         job_type = (self.request.query_params.get("job_type") or "").strip()

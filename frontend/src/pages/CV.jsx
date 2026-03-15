@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
 import { authAPI } from '../api/auth.api';
 import Loader from '../components/Loader';
@@ -8,6 +9,9 @@ const emptyEducation = () => ({ institution: '', degree: '', subject: '', start_
 const emptyExperience = () => ({ company: '', role: '', start_date: '', end_date: '', description: '' });
 
 const CV = () => {
+  const [searchParams] = useSearchParams();
+  const jobIdParam = searchParams.get('jobId');
+  const jobId = jobIdParam ? parseInt(jobIdParam, 10) : null;
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -110,11 +114,13 @@ const CV = () => {
     }
     setAiLoading(true);
     try {
-      const res = await authAPI.generateCVSummary({
+      const payload = {
         education: education.filter(e => e.institution || e.degree || e.subject),
         experience: experience.filter(x => x.company || x.role),
         current_summary: summary || undefined,
-      });
+      };
+      if (jobId && Number.isInteger(jobId)) payload.job_id = jobId;
+      const res = await authAPI.generateCVSummary(payload);
       setAiGeneratedSummary(res.data.summary || '');
     } catch (err) {
       let msg = err.response?.data?.detail || err.response?.data?.message || 'Failed to generate summary. Try again.';
@@ -163,6 +169,13 @@ const CV = () => {
         <div className="mb-4 rounded-xl bg-emerald-50 border border-emerald-200 px-4 py-3 flex items-center gap-2">
           <i className="bx bx-check-circle text-emerald-600 text-xl flex-shrink-0" />
           <p className="text-sm font-medium text-emerald-800">CV saved.</p>
+        </div>
+      )}
+
+      {jobId && (
+        <div className="mb-4 rounded-xl bg-primary-50 border border-primary-200 px-4 py-3 flex items-center gap-2">
+          <i className="bx bx-briefcase text-primary-600 text-xl flex-shrink-0" />
+          <p className="text-sm font-medium text-primary-800">You&apos;re building your CV for a specific job. Use &quot;Generate with AI&quot; to get a summary tailored to that role.</p>
         </div>
       )}
 
