@@ -49,6 +49,7 @@ class SkillSerializer(serializers.ModelSerializer):
 class StudentProfileSerializer(serializers.ModelSerializer):
     email = serializers.EmailField(source="user.email", read_only=True)
     skills = SkillSerializer(many=True, read_only=True)
+    profile_completeness_percent = serializers.SerializerMethodField()
 
     skills_ids = serializers.ListField(
         child=serializers.IntegerField(),
@@ -58,7 +59,32 @@ class StudentProfileSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = StudentProfile
-        fields = ["email", "name", "skills", "skills_ids", "preferred_job_type", "preferred_location", "course", "cv_summary"]
+        fields = [
+            "email",
+            "name",
+            "skills",
+            "skills_ids",
+            "preferred_job_type",
+            "preferred_location",
+            "course",
+            "cv_summary",
+            "profile_completeness_percent",
+        ]
+
+    def get_profile_completeness_percent(self, obj):
+        """0–100 based on course, skills, location, and display name (four equal weights)."""
+        score = 0
+        total = 4
+        course = (obj.course or "").strip()
+        if course and course.lower() != "not specified":
+            score += 1
+        if obj.skills.exists():
+            score += 1
+        if (obj.preferred_location or "").strip():
+            score += 1
+        if (obj.name or "").strip():
+            score += 1
+        return round(100 * score / total)
 
     def update(self, instance, validated_data):
         skills_ids = validated_data.pop("skills_ids", None)

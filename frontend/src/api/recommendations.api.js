@@ -1,7 +1,9 @@
 import axiosInstance from './axios';
 
 export const recommendationsAPI = {
-  // Get recommended jobs for current user
-  getRecommendations: () => 
-    axiosInstance.get('/api/recommendations/'),
+  getRecommendations: () => axiosInstance.get('/api/recommendations/'),
+
+  /** Mark a job as not interested (excluded from future recommendations). */
+  submitNotInterested: (jobId) =>
+    axiosInstance.post('/api/recommendations/feedback/', { job_id: jobId }),
 };

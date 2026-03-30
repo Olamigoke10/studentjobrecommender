@@ -53,3 +53,26 @@ class ApplicationTracker(models.Model):
         return f"{self.student.user.email} - {self.job.title} ({self.status})"
 
 
+class JobFeedback(models.Model):
+    """User feedback on a job from the recommendations flow (e.g. not interested)."""
+
+    NOT_INTERESTED = "not_interested"
+    FEEDBACK_CHOICES = [
+        (NOT_INTERESTED, "Not interested"),
+    ]
+
+    student = models.ForeignKey(
+        StudentProfile, on_delete=models.CASCADE, related_name="job_feedback"
+    )
+    job = models.ForeignKey(Job, on_delete=models.CASCADE, related_name="feedback_entries")
+    feedback_type = models.CharField(
+        max_length=32, choices=FEEDBACK_CHOICES, default=NOT_INTERESTED
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ("student", "job")
+
+    def __str__(self):
+        return f"{self.student.user.email} — {self.job_id} ({self.feedback_type})"
+

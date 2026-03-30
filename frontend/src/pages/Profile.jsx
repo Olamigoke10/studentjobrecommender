@@ -127,10 +127,29 @@ const Profile = () => {
   }
 
   const selectedSkillsCount = formData.skills_ids.length;
+  const completeness =
+    typeof user?.profile_completeness_percent === 'number' ? user.profile_completeness_percent : null;
 
   return (
     <div className="py-4 sm:py-6 animate-fade-in">
       <BackButton className="mb-4" />
+      {completeness != null && (
+        <div className="mb-4 card p-4 border-slate-200/80 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-900/40">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <p className="text-sm font-medium text-slate-800 dark:text-slate-200">Profile completeness</p>
+            <span className="text-sm font-semibold text-primary-700 dark:text-primary-300">{completeness}%</span>
+          </div>
+          <div className="mt-2 h-2 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden">
+            <div
+              className="h-full rounded-full bg-primary-600 dark:bg-primary-500"
+              style={{ width: `${completeness}%` }}
+            />
+          </div>
+          <p className="mt-2 text-xs text-slate-600 dark:text-slate-400">
+            Includes display name, course (not placeholder), at least one skill, and preferred location.
+          </p>
+        </div>
+      )}
       <div className="mb-4 sm:mb-8 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">Your Profile</h1>

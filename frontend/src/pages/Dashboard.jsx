@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
+import { authAPI } from '../api/auth.api';
 import { jobsAPI } from '../api/jobs.api';
 import { recommendationsAPI } from '../api/recommendations.api';
 import { ROUTES } from '../utils/constants';
@@ -29,7 +30,7 @@ const colorClasses = {
 };
 
 const Dashboard = () => {
-  const { user } = useAuth();
+  const { user, updateUser } = useAuth();
   const [stats, setStats] = useState({
     savedJobs: 0,
     applications: 0,
@@ -39,6 +40,15 @@ const Dashboard = () => {
 
   useEffect(() => {
     loadStats();
+  }, []);
+
+  useEffect(() => {
+    authAPI
+      .getProfile()
+      .then((res) => updateUser(res.data))
+      .catch(() => {});
+    // Refresh profile fields (e.g. completeness) once when opening the dashboard
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const loadStats = async () => {
@@ -62,9 +72,34 @@ const Dashboard = () => {
 
   if (stats.loading) return <Loader />;
 
+  const completeness =
+    typeof user?.profile_completeness_percent === 'number' ? user.profile_completeness_percent : null;
+
   return (
     <div className="py-4 sm:py-6 animate-fade-in">
       <BackButton className="mb-4" />
+      {completeness != null && completeness < 100 && (
+        <div className="mb-4 sm:mb-6 card p-4 sm:p-5 border-amber-200/80 bg-amber-50/90 dark:bg-amber-950/30 dark:border-amber-900/60">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div className="min-w-0">
+              <p className="text-sm font-semibold text-amber-900 dark:text-amber-200">Profile strength</p>
+              <p className="mt-1 text-sm text-amber-800/90 dark:text-amber-300/90">
+                Complete your name, course, skills, and location so &quot;For You&quot; matches stay relevant.
+              </p>
+              <div className="mt-3 h-2 rounded-full bg-amber-200/80 dark:bg-amber-900/50 overflow-hidden max-w-md">
+                <div
+                  className="h-full rounded-full bg-amber-500 dark:bg-amber-500"
+                  style={{ width: `${completeness}%` }}
+                />
+              </div>
+              <p className="mt-1.5 text-xs font-medium text-amber-800 dark:text-amber-400">{completeness}% complete</p>
+            </div>
+            <Link to={ROUTES.PROFILE} className="btn-primary shrink-0 self-start sm:self-center">
+              Complete profile
+            </Link>
+          </div>
+        </div>
+      )}
       <div className="mb-6 sm:mb-8 grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-5">
         <div className="card p-5 sm:p-6 lg:col-span-2">
           <p className="text-xs uppercase tracking-wide font-semibold text-primary-700 dark:text-primary-300">

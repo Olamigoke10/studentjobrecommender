@@ -12,7 +12,9 @@ export default function JobCard({
   onSave,
   onUnsave,
   onMarkApplied,
+  onNotInterested,
   saving = false,
+  dismissing = false,
   isSaved = false,
   applicationStatus = null,
   showMatchScore = false,
@@ -156,6 +158,26 @@ export default function JobCard({
                     )}
                   </button>
                 )
+              )}
+              {onNotInterested && (
+                <button
+                  type="button"
+                  onClick={() => onNotInterested(job.id)}
+                  disabled={dismissing || saving}
+                  className="w-full sm:w-auto justify-center inline-flex items-center px-4 py-2.5 rounded-xl text-sm font-medium border border-slate-200 text-slate-500 hover:bg-slate-50 hover:text-slate-700 dark:border-slate-600 dark:text-slate-400 dark:hover:bg-slate-800"
+                >
+                  {dismissing ? (
+                    <>
+                      <i className="bx bx-loader-alt bx-spin text-lg mr-2" />
+                      …
+                    </>
+                  ) : (
+                    <>
+                      <i className="bx bx-x text-lg mr-1" />
+                      Not interested
+                    </>
+                  )}
+                </button>
               )}
             </>
           )}

@@ -13,6 +13,7 @@ const Recommendations = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [saving, setSaving] = useState({});
+  const [dismissing, setDismissing] = useState({});
   const [applicationsMap, setApplicationsMap] = useState({});
 
   useEffect(() => {
@@ -89,7 +90,10 @@ const Recommendations = () => {
       <div className="mb-4 sm:mb-8 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">For You</h1>
-          <p className="mt-1 sm:mt-2 text-slate-600 dark:text-slate-300 text-sm sm:text-base">Jobs matched to your profile and preferences</p>
+          <p className="mt-1 sm:mt-2 text-slate-600 dark:text-slate-300 text-sm sm:text-base">
+            Matched to your course, skills, and preferences — plus roles similar to jobs you&apos;ve saved or applied to. Use{' '}
+            <span className="font-medium text-slate-700 dark:text-slate-200">Not interested</span> to tune future results.
+          </p>
         </div>
         <span className="inline-flex w-fit px-3 py-1.5 rounded-full bg-white/80 dark:bg-slate-900/80 border border-slate-200/70 dark:border-slate-700/70 text-xs sm:text-sm text-slate-600 dark:text-slate-300">
           {jobs.length} recommendation{jobs.length !== 1 ? 's' : ''}
@@ -111,6 +115,8 @@ const Recommendations = () => {
               key={job.id}
               job={job}
               onSave={handleSaveJob}
+              onNotInterested={handleNotInterested}
+              dismissing={dismissing[job.id]}
               onMarkApplied={async (jobId) => {
                 if (saving[jobId]) return;
                 setSaving((prev) => ({ ...prev, [jobId]: true }));
