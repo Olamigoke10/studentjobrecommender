@@ -76,8 +76,9 @@ const login = async (email, password) => {
 
   } catch (error) {
     console.error("Login error:", error);
-    const message =
-      error.response?.data?.detail || "Invalid email or password";
+    const message = !error.response
+      ? "Server is unavailable right now. Please try again in a minute."
+      : (error.response?.data?.detail || "Invalid email or password");
     setError(message);
     return { success: false, message };
   }
@@ -104,6 +105,9 @@ const login = async (email, password) => {
       // Handle Django validation errors generically
       let message = 'Registration failed';
       const data = error.response?.data;
+      if (!error.response) {
+        message = "Server is unavailable right now. Please try again in a minute.";
+      }
 
       if (data) {
         const firstKey = Object.keys(data)[0];

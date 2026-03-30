@@ -21,15 +21,15 @@ export default function JobCard({
 }) {
   const navigate = useNavigate();
   const descriptionSnippet = job.description
-    ? job.description.substring(0, 220) + (job.description.length > 220 ? '...' : '')
+    ? job.description.substring(0, 170) + (job.description.length > 170 ? '...' : '')
     : null;
 
   return (
-    <article className="card card-hover p-6 sm:p-7">
-      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-5">
+    <article className="card card-hover p-5 sm:p-6">
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
         <div className="min-w-0 flex-1">
-          <div className="flex flex-wrap items-center gap-2 mb-2">
-            <h3 className="text-xl font-bold text-slate-900 leading-tight">
+          <div className="flex flex-wrap items-center gap-2 mb-1.5">
+            <h3 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-slate-100 leading-tight">
               {job.title}
             </h3>
             {showMatchScore && job.match_score != null && (
@@ -38,7 +38,7 @@ export default function JobCard({
               </span>
             )}
             {job.job_type && (
-              <span className="inline-flex items-center px-2.5 py-0.5 rounded-lg text-xs font-medium bg-primary-100 text-primary-700">
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-lg text-xs font-medium bg-primary-100 text-primary-700 dark:bg-primary-900/40 dark:text-primary-200">
                 {job.job_type}
               </span>
             )}
@@ -55,9 +55,9 @@ export default function JobCard({
             </div>
           )}
 
-          <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-slate-600">
+          <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-slate-600 dark:text-slate-300">
             {job.company && (
-              <span className="font-medium text-slate-700">{job.company}</span>
+              <span className="font-medium text-slate-700 dark:text-slate-200">{job.company}</span>
             )}
             {job.location && (
               <span className="flex items-center gap-1">
@@ -66,18 +66,18 @@ export default function JobCard({
               </span>
             )}
             {job.posted_date && (
-              <span className="text-slate-500">Posted {formatDate(job.posted_date)}</span>
+              <span className="text-slate-500 dark:text-slate-400">Posted {formatDate(job.posted_date)}</span>
             )}
           </div>
 
           {descriptionSnippet && (
-            <p className="mt-3 text-slate-600 text-sm leading-relaxed line-clamp-3">
+            <p className="mt-2.5 text-slate-600 dark:text-slate-300 text-sm leading-relaxed line-clamp-2">
               {descriptionSnippet}
             </p>
           )}
         </div>
 
-        <div className="flex flex-col gap-2 sm:flex-shrink-0 sm:w-40">
+        <div className="flex flex-wrap sm:flex-col gap-2 sm:flex-shrink-0 sm:w-44">
           {job.url && (
             <a
               href={job.url}
@@ -92,9 +92,9 @@ export default function JobCard({
           <button
             type="button"
             onClick={() => navigate(`${ROUTES.CV}?jobId=${job.id}`)}
-            className="w-full sm:w-auto justify-center inline-flex items-center px-5 py-2.5 rounded-xl text-sm font-semibold border border-primary-200 bg-primary-50 text-primary-700 hover:bg-primary-100 transition-all duration-200"
+            className="w-full sm:w-auto justify-center inline-flex items-center px-4 py-2.5 rounded-xl text-sm font-semibold border border-primary-200 bg-primary-50 text-primary-700 hover:bg-primary-100 transition-all duration-200 dark:border-primary-800 dark:bg-primary-900/30 dark:text-primary-200 dark:hover:bg-primary-900/50"
           >
-            Build CV for this job
+            Build CV
             <i className="bx bx-file ml-1.5 text-base" />
           </button>
           {variant === 'saved' ? (
@@ -119,7 +119,7 @@ export default function JobCard({
                 disabled={saving || isSaved}
                 className={`w-full sm:w-auto justify-center inline-flex items-center px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 ${
                   isSaved
-                    ? 'bg-emerald-50 text-emerald-700 border border-emerald-200 cursor-default'
+                    ? 'bg-emerald-50 text-emerald-700 border border-emerald-200 cursor-default dark:bg-emerald-900/30 dark:text-emerald-300 dark:border-emerald-800'
                     : 'btn-secondary'
                 }`}
               >
@@ -136,7 +136,7 @@ export default function JobCard({
               </button>
               {onMarkApplied && (
                 applicationStatus ? (
-                  <span className="w-full sm:w-auto justify-center inline-flex items-center px-5 py-2.5 rounded-xl text-sm font-semibold bg-primary-50 text-primary-700 border border-primary-200">
+                  <span className="w-full sm:w-auto justify-center inline-flex items-center px-5 py-2.5 rounded-xl text-sm font-semibold bg-primary-50 text-primary-700 border border-primary-200 dark:bg-primary-900/30 dark:text-primary-200 dark:border-primary-800">
                     {applicationStatus.charAt(0).toUpperCase() + applicationStatus.slice(1)}
                   </span>
                 ) : (

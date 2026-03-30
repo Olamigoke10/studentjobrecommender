@@ -85,6 +85,13 @@ const Jobs = () => {
     loadJobs(1);
   };
 
+  const handleClearFilters = () => {
+    setSearch('');
+    setLocation('');
+    setJobType('');
+    loadJobs(1, false, { search: '', location: '', job_type: '' });
+  };
+
   const handleRefreshJobs = async () => {
     setRefreshing(true);
     setRefreshError(null);
@@ -152,68 +159,110 @@ const Jobs = () => {
   return (
     <div className="py-4 sm:py-6 animate-fade-in">
       <BackButton className="mb-4" />
-      <div className="mb-4 sm:mb-6">
-        <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">Browse Jobs</h1>
-        <p className="mt-1 sm:mt-2 text-slate-600 text-sm sm:text-base">Discover opportunities that match your interests</p>
+      <div className="mb-4 sm:mb-6 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">Browse Jobs</h1>
+          <p className="mt-1 text-slate-600 dark:text-slate-300 text-sm sm:text-base">Simple search. Better results.</p>
+        </div>
+        <div className="inline-flex items-center gap-2 text-xs sm:text-sm text-slate-600 dark:text-slate-300">
+          <span className="px-3 py-1.5 rounded-full bg-white/80 dark:bg-slate-900/80 border border-slate-200/70 dark:border-slate-700/70">
+            {totalCount} result{totalCount !== 1 ? 's' : ''}
+          </span>
+          <span className="px-3 py-1.5 rounded-full bg-white/80 dark:bg-slate-900/80 border border-slate-200/70 dark:border-slate-700/70">
+            Page {page}/{totalPages}
+          </span>
+        </div>
       </div>
 
-      <form onSubmit={handleSearch} className="card p-4 sm:p-5 mb-6 flex flex-col sm:flex-row sm:flex-wrap sm:items-end gap-4">
-        <div className="w-full sm:flex-1 sm:min-w-[180px]">
-          <label className="block text-sm font-medium text-slate-700 mb-1">Keyword</label>
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="e.g. graduate, software"
-            className="input-field"
-          />
+      <form onSubmit={handleSearch} className="card p-4 sm:p-5 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-3 sm:gap-4">
+          <div className="md:col-span-2">
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-200 mb-1">Keyword</label>
+            <div className="relative">
+              <i className="bx bx-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 text-lg" />
+              <input
+                type="text"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Graduate, software, analyst..."
+                className="input-field pl-11"
+              />
+            </div>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-200 mb-1">Location</label>
+            <input
+              type="text"
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
+              placeholder="London"
+              className="input-field"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-200 mb-1">Job type</label>
+            <select
+              value={jobType}
+              onChange={(e) => setJobType(e.target.value)}
+              className="input-field"
+            >
+              <option value="">All types</option>
+              {JOB_TYPES.map((t) => (
+                <option key={t} value={t}>{t}</option>
+              ))}
+            </select>
+          </div>
         </div>
-        <div className="w-full sm:w-48 sm:min-w-[140px]">
-          <label className="block text-sm font-medium text-slate-700 mb-1">Location</label>
-          <input
-            type="text"
-            value={location}
-            onChange={(e) => setLocation(e.target.value)}
-            placeholder="e.g. London"
-            className="input-field"
-          />
-        </div>
-        <div className="w-full sm:w-40 sm:min-w-[120px]">
-          <label className="block text-sm font-medium text-slate-700 mb-1">Job type</label>
-          <select
-            value={jobType}
-            onChange={(e) => setJobType(e.target.value)}
-            className="input-field"
+        <div className="mt-4 flex flex-wrap gap-2 sm:gap-3">
+          <button type="submit" className="btn-primary">
+            <i className="bx bx-search text-base mr-1.5" />
+            Search
+          </button>
+          <button type="button" onClick={handleClearFilters} className="btn-secondary">
+            Clear
+          </button>
+          <button
+            type="button"
+            onClick={handleRefreshJobs}
+            disabled={refreshing}
+            className="btn-secondary disabled:opacity-60"
           >
-            <option value="">All</option>
-            {JOB_TYPES.map((t) => (
-              <option key={t} value={t}>{t}</option>
-            ))}
-          </select>
+            {refreshing ? (
+              <>
+                <i className="bx bx-loader-alt bx-spin text-lg mr-1.5" />
+                Loading...
+              </>
+            ) : (
+              <>
+                <i className="bx bx-refresh text-lg mr-1.5" />
+                Refresh feed
+              </>
+            )}
+          </button>
         </div>
-        <button type="submit" className="btn-primary w-full sm:w-auto">Search</button>
       </form>
 
+      {refreshError && (
+        <div className="mb-5 rounded-xl border border-amber-200 bg-amber-50 text-amber-800 px-4 py-3 text-sm dark:bg-amber-950/40 dark:border-amber-900 dark:text-amber-300">
+          {refreshError}
+        </div>
+      )}
+
       {jobs.length === 0 && !loading ? (
-        <div className="card p-12 text-center">
-          <div className="inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-primary-100 text-primary-600 mb-6">
-            <i className="bx bx-briefcase text-4xl" />
+        <div className="card p-10 text-center">
+          <div className="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-primary-100 text-primary-600 mb-5">
+            <i className="bx bx-briefcase text-3xl" />
           </div>
           {search.trim() || location.trim() || jobType ? (
             <>
-              <h3 className="text-lg font-semibold text-slate-900">No jobs match your filters</h3>
-              <p className="mt-2 text-slate-600 text-sm max-w-sm mx-auto">
-                Try different keywords, location, or job type—or clear filters and load from the feed.
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">No jobs match these filters</h3>
+              <p className="mt-2 text-slate-600 dark:text-slate-300 text-sm max-w-sm mx-auto">
+                Try broader keywords, or clear filters and refresh the feed.
               </p>
               <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
                 <button
                   type="button"
-                  onClick={() => {
-                    setSearch('');
-                    setLocation('');
-                    setJobType('');
-                    loadJobs(1, false, { search: '', location: '', job_type: '' });
-                  }}
+                  onClick={handleClearFilters}
                   className="btn-secondary"
                 >
                   Clear filters
@@ -225,10 +274,7 @@ const Jobs = () => {
                   className="btn-primary inline-flex disabled:opacity-60"
                 >
                   {refreshing ? (
-                    <>
-                      <i className="bx bx-loader-alt bx-spin text-xl mr-2" />
-                      Loading…
-                    </>
+                    'Loading...'
                   ) : (
                     'Load latest jobs'
                   )}
@@ -237,15 +283,10 @@ const Jobs = () => {
             </>
           ) : (
             <>
-              <h3 className="text-lg font-semibold text-slate-900">Load graduate jobs</h3>
-              <p className="mt-2 text-slate-600 text-sm max-w-sm mx-auto">
-                Jobs are pulled from our partner feed. Click below to load the latest opportunities.
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">No jobs loaded yet</h3>
+              <p className="mt-2 text-slate-600 dark:text-slate-300 text-sm max-w-sm mx-auto">
+                Load the latest opportunities from the partner feed.
               </p>
-              {refreshError && (
-                <p className="mt-3 text-sm text-amber-700 bg-amber-50 rounded-xl px-4 py-2 inline-block">
-                  {refreshError}
-                </p>
-              )}
               <button
                 type="button"
                 onClick={handleRefreshJobs}
@@ -253,10 +294,7 @@ const Jobs = () => {
                 className="btn-primary mt-6 inline-flex disabled:opacity-60"
               >
                 {refreshing ? (
-                  <>
-                    <i className="bx bx-loader-alt bx-spin text-xl mr-2" />
-                    Loading jobs…
-                  </>
+                  'Loading jobs...'
                 ) : (
                   'Load latest jobs'
                 )}
@@ -266,22 +304,10 @@ const Jobs = () => {
         </div>
       ) : (
         <>
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
-            <p className="text-sm text-slate-600">
-              {totalCount > 0 ? `${totalCount} job${totalCount !== 1 ? 's' : ''} found` : 'No jobs match your filters'}
-            </p>
-            {totalCount > 0 && (
-              <button
-                type="button"
-                onClick={handleRefreshJobs}
-                disabled={refreshing}
-                className="text-sm font-medium text-primary-600 hover:text-primary-700 disabled:opacity-60"
-              >
-                {refreshing ? 'Loading…' : 'Load latest from feed'}
-              </button>
-            )}
+          <div className="mb-4 text-sm text-slate-600 dark:text-slate-300">
+            Showing {jobs.length} of {totalCount} jobs
           </div>
-          <div className="space-y-6">
+          <div className="space-y-4">
             {jobs.map((job) => (
               <JobCard
                 key={job.id}
@@ -295,7 +321,7 @@ const Jobs = () => {
             ))}
           </div>
           {totalPages > 1 && (
-            <div className="mt-6 flex flex-wrap items-center justify-center gap-3 sm:gap-4">
+            <div className="mt-7 flex items-center justify-center gap-3 sm:gap-4">
               <button
                 type="button"
                 onClick={() => loadJobs(page - 1)}
@@ -304,7 +330,7 @@ const Jobs = () => {
               >
                 Previous
               </button>
-              <span className="text-sm text-slate-600">
+              <span className="text-sm text-slate-600 dark:text-slate-300">
                 Page {page} of {totalPages}
               </span>
               <button
