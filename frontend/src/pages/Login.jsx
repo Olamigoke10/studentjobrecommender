@@ -20,11 +20,13 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-primary-900 to-slate-800 py-8 sm:py-12 px-4">
+    <div className="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-950 via-primary-900 to-indigo-900 py-8 sm:py-12 px-4 overflow-hidden dark:from-slate-950 dark:via-slate-900 dark:to-slate-900">
+      <div className="pointer-events-none absolute -top-20 -left-20 h-64 w-64 rounded-full bg-primary-400/20 blur-3xl" />
+      <div className="pointer-events-none absolute -bottom-24 -right-16 h-72 w-72 rounded-full bg-blue-400/20 blur-3xl" />
       <div className="w-full max-w-5xl animate-fade-in">
-        <div className="overflow-hidden rounded-3xl border border-white/20 bg-white/10 backdrop-blur-sm shadow-2xl">
+        <div className="overflow-hidden rounded-3xl border border-white/25 bg-white/10 backdrop-blur-sm shadow-2xl dark:border-slate-700/60 dark:bg-slate-900/40">
           <div className="grid lg:grid-cols-2">
-            <section className="hidden lg:flex flex-col justify-between p-10 bg-gradient-to-br from-primary-600 to-primary-800 text-white">
+            <section className="hidden lg:flex flex-col justify-between p-10 bg-gradient-to-br from-primary-600 to-indigo-700 text-white dark:from-slate-900 dark:to-primary-900">
               <div>
                 <div className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-white/20 text-2xl font-bold mb-6">
                   S
@@ -43,15 +45,15 @@ const Login = () => {
               </ul>
             </section>
 
-            <section className="bg-white p-7 sm:p-10">
+            <section className="bg-white/95 backdrop-blur p-7 sm:p-10 dark:bg-slate-950/90">
               <div className="text-center mb-8">
                 <div className="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-primary-100 text-primary-600 font-bold text-2xl mb-4">
                   S
                 </div>
-                <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">
+                <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight dark:text-slate-100">
                   Welcome back
                 </h1>
-                <p className="mt-2 text-slate-600 text-sm">
+                <p className="mt-2 text-slate-600 text-sm dark:text-slate-300">
                   Sign in to continue to your job dashboard
                 </p>
               </div>
@@ -65,11 +67,11 @@ const Login = () => {
                 )}
 
                 <div>
-                  <label htmlFor="email" className="block text-sm font-semibold text-slate-700 mb-1.5">
+                  <label htmlFor="email" className="block text-sm font-semibold text-slate-700 mb-1.5 dark:text-slate-200">
                     Email
                   </label>
                   <div className="relative">
-                    <i className="bx bx-envelope absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-lg" />
+                    <i className="bx bx-envelope absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-lg dark:text-slate-500" />
                     <input
                       id="email"
                       name="email"
@@ -84,11 +86,11 @@ const Login = () => {
                   </div>
                 </div>
                 <div>
-                  <label htmlFor="password" className="block text-sm font-semibold text-slate-700 mb-1.5">
+                  <label htmlFor="password" className="block text-sm font-semibold text-slate-700 mb-1.5 dark:text-slate-200">
                     Password
                   </label>
                   <div className="relative">
-                    <i className="bx bx-lock-alt absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-lg" />
+                    <i className="bx bx-lock-alt absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-lg dark:text-slate-500" />
                     <input
                       id="password"
                       name="password"
@@ -103,7 +105,7 @@ const Login = () => {
                     <button
                       type="button"
                       onClick={() => setShowPassword((prev) => !prev)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-700"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
                       aria-label={showPassword ? 'Hide password' : 'Show password'}
                     >
                       <i className={`bx text-xl ${showPassword ? 'bx-hide' : 'bx-show'}`} />
@@ -127,7 +129,7 @@ const Login = () => {
                 </button>
               </form>
 
-              <p className="mt-6 text-center text-sm text-slate-600">
+              <p className="mt-6 text-center text-sm text-slate-600 dark:text-slate-300">
                 Don't have an account?{' '}
                 <Link to={ROUTES.REGISTER} className="font-semibold text-primary-600 hover:text-primary-700">
                   Create one
