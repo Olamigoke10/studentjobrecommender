@@ -61,6 +61,20 @@ const Recommendations = () => {
     }
   };
 
+  const handleNotInterested = async (jobId) => {
+    if (dismissing[jobId]) return;
+    setDismissing((prev) => ({ ...prev, [jobId]: true }));
+    try {
+      await recommendationsAPI.submitNotInterested(jobId);
+      setJobs((prev) => prev.filter((j) => j.id !== jobId));
+    } catch (err) {
+      console.error('Failed to record feedback:', err);
+      alert('Could not update recommendations. Please try again.');
+    } finally {
+      setDismissing((prev) => ({ ...prev, [jobId]: false }));
+    }
+  };
+
   if (loading) return <Loader />;
 
   if (error) {
