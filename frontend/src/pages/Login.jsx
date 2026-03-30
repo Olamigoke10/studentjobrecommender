@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
 import { ROUTES } from '../utils/constants';
+import talentPathLogo from '../../logo/logo.png';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -28,9 +29,7 @@ const Login = () => {
           <div className="grid lg:grid-cols-2">
             <section className="hidden lg:flex flex-col justify-between p-10 bg-gradient-to-br from-primary-600 to-indigo-700 text-white dark:from-slate-900 dark:to-primary-900">
               <div>
-                <div className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-white/20 text-2xl font-bold mb-6">
-                  S
-                </div>
+                <img src={talentPathLogo} alt="Talent Path" className="h-12 w-12 rounded-xl object-cover mb-6" />
                 <h2 className="text-3xl font-bold leading-tight">
                   Land student jobs that actually fit your profile
                 </h2>
@@ -47,9 +46,7 @@ const Login = () => {
 
             <section className="bg-white/95 backdrop-blur p-7 sm:p-10 dark:bg-slate-950/90">
               <div className="text-center mb-8">
-                <div className="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-primary-100 text-primary-600 font-bold text-2xl mb-4">
-                  S
-                </div>
+                <img src={talentPathLogo} alt="Talent Path" className="h-14 w-14 rounded-2xl object-cover mx-auto mb-4" />
                 <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight dark:text-slate-100">
                   Welcome back
                 </h1>

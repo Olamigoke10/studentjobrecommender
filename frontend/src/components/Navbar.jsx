@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
 import { ROUTES } from '../utils/constants';
+import talentPathLogo from '../../logo/logo.png';
 
 const navLinks = [
   { to: ROUTES.DASHBOARD, label: 'Dashboard' },
@@ -64,10 +65,8 @@ const Navbar = () => {
                 to={ROUTES.DASHBOARD}
                 className="flex items-center gap-2 text-lg sm:text-xl font-bold text-primary-700 hover:text-primary-800 transition-colors shrink-0 dark:text-primary-300 dark:hover:text-primary-200"
               >
-                <span className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-xl bg-gradient-to-br from-primary-600 to-primary-500 text-white font-extrabold text-sm sm:text-base shadow-sm">
-                  S
-                </span>
-                <span className="truncate">StudentJobRec</span>
+                <img src={talentPathLogo} alt="Talent Path" className="h-8 w-8 sm:h-9 sm:w-9 rounded-lg object-cover shadow-sm" />
+                <span className="truncate">Talent Path</span>
               </Link>
               <div className="hidden md:flex items-center gap-1">
                 {navLinks.map(({ to, label }) => {
