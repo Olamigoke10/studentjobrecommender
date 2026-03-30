@@ -126,91 +126,115 @@ const Profile = () => {
     return <Loader />;
   }
 
+  const selectedSkillsCount = formData.skills_ids.length;
+
   return (
     <div className="py-4 sm:py-6 animate-fade-in">
       <BackButton className="mb-4" />
-      <div className="mb-4 sm:mb-8">
-        <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">Profile</h1>
-        <p className="mt-1 sm:mt-2 text-slate-600 text-sm sm:text-base">
-          Update your profile to get better job recommendations
-        </p>
+      <div className="mb-4 sm:mb-8 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">Your Profile</h1>
+          <p className="mt-1 sm:mt-2 text-slate-600 dark:text-slate-300 text-sm sm:text-base">
+            Keep this updated to improve recommendation quality.
+          </p>
+        </div>
+        <div className="inline-flex items-center gap-2 text-xs sm:text-sm text-slate-600 dark:text-slate-300">
+          <span className="px-3 py-1.5 rounded-full bg-white/80 dark:bg-slate-900/80 border border-slate-200/70 dark:border-slate-700/70">
+            {selectedSkillsCount} skill{selectedSkillsCount !== 1 ? 's' : ''} selected
+          </span>
+          <span className="px-3 py-1.5 rounded-full bg-white/80 dark:bg-slate-900/80 border border-slate-200/70 dark:border-slate-700/70">
+            {formData.preferred_job_type.replace('_', ' ')}
+          </span>
+        </div>
       </div>
 
       <div className="card p-4 sm:p-6 lg:p-8">
         <form onSubmit={handleSubmit} className="space-y-6">
-          <div>
-            <label htmlFor="name" className="block text-sm font-semibold text-slate-700 mb-1.5">
-              Display name
-            </label>
-            <input
-              type="text"
-              id="name"
-              name="name"
-              value={formData.name}
-              onChange={handleChange}
-              className="input-field"
-              placeholder="e.g. Alex"
-            />
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 sm:gap-6">
+            <div>
+              <label htmlFor="name" className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-1.5">
+                Display name
+              </label>
+              <div className="relative">
+                <i className="bx bx-user absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 text-lg" />
+                <input
+                  type="text"
+                  id="name"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleChange}
+                  className="input-field pl-11"
+                  placeholder="e.g. Alex"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label htmlFor="course" className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-1.5">
+                Course / field of study
+              </label>
+              <select
+                id="course"
+                name="course"
+                value={formData.course}
+                onChange={handleChange}
+                className="input-field"
+              >
+                <option value="">Select course</option>
+                {formData.course && !courses.includes(formData.course) && (
+                  <option value={formData.course}>{formData.course}</option>
+                )}
+                {courses.map((course) => (
+                  <option key={course} value={course}>{course}</option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label htmlFor="preferred_job_type" className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-1.5">
+                Preferred job type
+              </label>
+              <select
+                id="preferred_job_type"
+                name="preferred_job_type"
+                value={formData.preferred_job_type}
+                onChange={handleChange}
+                className="input-field"
+              >
+                {JOB_TYPES.map((type) => (
+                  <option key={type.value} value={type.value}>
+                    {type.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label htmlFor="preferred_location" className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-1.5">
+                Preferred location
+              </label>
+              <div className="relative">
+                <i className="bx bx-map-alt absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 text-lg" />
+                <input
+                  type="text"
+                  id="preferred_location"
+                  name="preferred_location"
+                  value={formData.preferred_location}
+                  onChange={handleChange}
+                  className="input-field pl-11"
+                  placeholder="e.g. London, UK"
+                />
+              </div>
+            </div>
           </div>
+
           <div>
-            <label htmlFor="course" className="block text-sm font-semibold text-slate-700 mb-1.5">
-              Course / field of study
+            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">
+              Skills ({selectedSkillsCount})
             </label>
-            <select
-              id="course"
-              name="course"
-              value={formData.course}
-              onChange={handleChange}
-              className="input-field"
-            >
-              <option value="">Select course</option>
-              {formData.course && !courses.includes(formData.course) && (
-                <option value={formData.course}>{formData.course}</option>
-              )}
-              {courses.map((course) => (
-                <option key={course} value={course}>{course}</option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label htmlFor="preferred_job_type" className="block text-sm font-semibold text-slate-700 mb-1.5">
-              Preferred job type
-            </label>
-            <select
-              id="preferred_job_type"
-              name="preferred_job_type"
-              value={formData.preferred_job_type}
-              onChange={handleChange}
-              className="input-field"
-            >
-              {JOB_TYPES.map((type) => (
-                <option key={type.value} value={type.value}>
-                  {type.label}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label htmlFor="preferred_location" className="block text-sm font-semibold text-slate-700 mb-1.5">
-              Preferred location
-            </label>
-            <input
-              type="text"
-              id="preferred_location"
-              name="preferred_location"
-              value={formData.preferred_location}
-              onChange={handleChange}
-              className="input-field"
-              placeholder="e.g. London, UK"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-semibold text-slate-700 mb-2">
-              Skills
-            </label>
-            <div className="rounded-xl border border-slate-200 bg-slate-50/50 p-4 min-h-[100px] max-h-[220px] overflow-y-auto">
+            <div className="rounded-2xl border border-slate-200/80 dark:border-slate-700/80 bg-slate-50/70 dark:bg-slate-900/50 p-4 min-h-[100px] max-h-[220px] overflow-y-auto">
               {skills.length === 0 ? (
-                <p className="text-sm text-slate-500">No skills available</p>
+                <p className="text-sm text-slate-500 dark:text-slate-400">No skills available</p>
               ) : (
                 <div className="flex flex-wrap gap-2">
                   {skills.map((skill) => (
@@ -220,8 +244,8 @@ const Profile = () => {
                       onClick={() => handleSkillToggle(skill.id)}
                       className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 ${
                         formData.skills_ids.includes(skill.id)
-                          ? 'bg-primary-600 text-white shadow-sm'
-                          : 'bg-white border border-slate-200 text-slate-700 hover:border-primary-300 hover:bg-primary-50'
+                          ? 'bg-primary-700 text-white shadow-sm'
+                          : 'bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:border-primary-300 hover:bg-primary-50 dark:hover:bg-primary-900/20'
                       }`}
                     >
                       {skill.name}
@@ -231,7 +255,7 @@ const Profile = () => {
                 </div>
               )}
             </div>
-            <p className="mt-2 text-xs text-slate-500">Click to select or deselect</p>
+            <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">Click a skill to select or remove it</p>
           </div>
 
           {error && (
@@ -246,7 +270,7 @@ const Profile = () => {
             </div>
           )}
 
-          <div className="flex flex-col sm:flex-row sm:justify-end pt-2">
+          <div className="flex flex-col sm:flex-row sm:justify-end pt-2 border-t border-slate-200/70 dark:border-slate-700/70">
             <button type="submit" disabled={saving} className="btn-primary w-full sm:w-auto min-h-[44px] px-6 sm:px-8 py-3 disabled:opacity-50 disabled:cursor-not-allowed">
               {saving ? (
                 <span className="flex items-center gap-2">
