@@ -94,18 +94,23 @@ const Applications = () => {
   return (
     <div className="py-4 sm:py-6 animate-fade-in">
       <BackButton className="mb-4" />
-      <div className="mb-4 sm:mb-8">
-        <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">My Applications</h1>
-        <p className="mt-1 sm:mt-2 text-slate-600 text-sm sm:text-base">Track status and notes for each application</p>
+      <div className="mb-4 sm:mb-8 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">My Applications</h1>
+          <p className="mt-1 sm:mt-2 text-slate-600 dark:text-slate-300 text-sm sm:text-base">Track status and notes for each application</p>
+        </div>
+        <span className="inline-flex w-fit px-3 py-1.5 rounded-full bg-white/80 dark:bg-slate-900/80 border border-slate-200/70 dark:border-slate-700/70 text-xs sm:text-sm text-slate-600 dark:text-slate-300">
+          {applications.length} application{applications.length !== 1 ? 's' : ''}
+        </span>
       </div>
 
       {applications.length === 0 ? (
-        <div className="card p-12 text-center">
+        <div className="card p-10 text-center">
           <div className="inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-primary-100 text-primary-600 mb-6">
             <i className="bx bx-clipboard text-4xl" />
           </div>
-          <h3 className="text-lg font-semibold text-slate-900">No applications yet</h3>
-          <p className="mt-2 text-slate-600 text-sm max-w-sm mx-auto">
+          <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">No applications yet</h3>
+          <p className="mt-2 text-slate-600 dark:text-slate-300 text-sm max-w-sm mx-auto">
             Mark jobs as applied from Browse Jobs or Saved to track them here.
           </p>
           <Link to={ROUTES.JOBS} className="btn-primary mt-6 inline-flex">
@@ -113,27 +118,27 @@ const Applications = () => {
           </Link>
         </div>
       ) : (
-        <div className="space-y-6">
+        <div className="space-y-4">
           {applications.map((app) => {
             const job = app.job;
             if (!job) return null;
             const isEditingNotes = editingNotes === app.id;
             return (
-              <article key={app.id} className="card card-hover p-6">
+              <article key={app.id} className="card card-hover p-5 sm:p-6">
                 <div className="flex flex-col gap-4">
                   <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
                     <div className="min-w-0 flex-1">
-                      <h3 className="text-lg sm:text-xl font-bold text-slate-900">{job.title}</h3>
-                      <div className="flex flex-wrap gap-x-4 gap-y-1 mt-1 text-sm text-slate-600">
-                        {job.company && <span className="font-medium text-slate-700">{job.company}</span>}
+                      <h3 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-slate-100">{job.title}</h3>
+                      <div className="flex flex-wrap gap-x-4 gap-y-1 mt-1 text-sm text-slate-600 dark:text-slate-300">
+                        {job.company && <span className="font-medium text-slate-700 dark:text-slate-200">{job.company}</span>}
                         {job.location && <span>{job.location}</span>}
                         {job.job_type && (
-                          <span className="inline-flex items-center px-2 py-0.5 rounded-lg text-xs font-medium bg-primary-100 text-primary-700">
+                          <span className="inline-flex items-center px-2 py-0.5 rounded-lg text-xs font-medium bg-primary-100 text-primary-700 dark:bg-primary-900/30 dark:text-primary-200">
                             {job.job_type}
                           </span>
                         )}
                       </div>
-                      <p className="mt-2 text-xs text-slate-500">
+                      <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
                         Applied {formatDate(app.applied_at)}
                         {app.updated_at !== app.applied_at && ` · Updated ${formatDate(app.updated_at)}`}
                       </p>
@@ -187,17 +192,17 @@ const Applications = () => {
                       </div>
                     ) : (
                       <div className="flex items-start justify-between gap-2">
-                        <p className="text-sm text-slate-600 flex-1">
+                        <p className="text-sm text-slate-600 dark:text-slate-300 flex-1">
                           {app.notes ? (
                             <span className="whitespace-pre-wrap">{app.notes}</span>
                           ) : (
-                            <span className="text-slate-400">No notes</span>
+                            <span className="text-slate-400 dark:text-slate-500">No notes</span>
                           )}
                         </p>
                         <button
                           type="button"
                           onClick={() => startEditNotes(app)}
-                          className="text-sm font-medium text-primary-600 hover:text-primary-700"
+                          className="text-sm font-medium text-primary-600 hover:text-primary-700 dark:text-primary-300 dark:hover:text-primary-200"
                         >
                           {app.notes ? 'Edit notes' : 'Add notes'}
                         </button>

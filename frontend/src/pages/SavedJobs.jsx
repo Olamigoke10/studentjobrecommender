@@ -70,9 +70,14 @@ const SavedJobs = () => {
   return (
     <div className="py-4 sm:py-6 animate-fade-in">
       <BackButton className="mb-4" />
-      <div className="mb-4 sm:mb-8">
-        <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">Saved Jobs</h1>
-        <p className="mt-1 sm:mt-2 text-slate-600 text-sm sm:text-base">Your saved opportunities</p>
+      <div className="mb-4 sm:mb-8 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">Saved Jobs</h1>
+          <p className="mt-1 sm:mt-2 text-slate-600 dark:text-slate-300 text-sm sm:text-base">Your saved opportunities</p>
+        </div>
+        <span className="inline-flex w-fit px-3 py-1.5 rounded-full bg-white/80 dark:bg-slate-900/80 border border-slate-200/70 dark:border-slate-700/70 text-xs sm:text-sm text-slate-600 dark:text-slate-300">
+          {jobs.length} saved
+        </span>
       </div>
 
       {jobs.length === 0 ? (
@@ -84,7 +89,7 @@ const SavedJobs = () => {
           actionHref={ROUTES.JOBS}
         />
       ) : (
-        <div className="space-y-6">
+        <div className="space-y-4">
           {jobs.map((job) => (
             <JobCard
               key={job.id}

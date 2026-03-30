@@ -67,8 +67,8 @@ const Recommendations = () => {
     return (
       <div className="py-4 sm:py-6 animate-fade-in">
         <BackButton className="mb-4" />
-        <div className={`card p-4 sm:p-6 ${isProfileError ? 'border-amber-200 bg-amber-50' : 'border-red-200 bg-red-50'}`}>
-          <p className={isProfileError ? 'text-amber-800' : 'text-red-800'}>{error}</p>
+        <div className={`card p-4 sm:p-6 ${isProfileError ? 'border-amber-200 bg-amber-50 dark:border-amber-900 dark:bg-amber-950/40' : 'border-red-200 bg-red-50 dark:border-red-900 dark:bg-red-950/40'}`}>
+          <p className={isProfileError ? 'text-amber-800 dark:text-amber-300' : 'text-red-800 dark:text-red-300'}>{error}</p>
           {isProfileError ? (
             <Link to={ROUTES.PROFILE} className="btn-primary mt-4 inline-flex">
               Complete profile
@@ -86,9 +86,14 @@ const Recommendations = () => {
   return (
     <div className="py-4 sm:py-6 animate-fade-in">
       <BackButton className="mb-4" />
-      <div className="mb-4 sm:mb-8">
-        <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">For You</h1>
-        <p className="mt-1 sm:mt-2 text-slate-600 text-sm sm:text-base">Jobs matched to your profile and preferences</p>
+      <div className="mb-4 sm:mb-8 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">For You</h1>
+          <p className="mt-1 sm:mt-2 text-slate-600 dark:text-slate-300 text-sm sm:text-base">Jobs matched to your profile and preferences</p>
+        </div>
+        <span className="inline-flex w-fit px-3 py-1.5 rounded-full bg-white/80 dark:bg-slate-900/80 border border-slate-200/70 dark:border-slate-700/70 text-xs sm:text-sm text-slate-600 dark:text-slate-300">
+          {jobs.length} recommendation{jobs.length !== 1 ? 's' : ''}
+        </span>
       </div>
 
       {jobs.length === 0 ? (
@@ -100,7 +105,7 @@ const Recommendations = () => {
           actionHref={ROUTES.PROFILE}
         />
       ) : (
-        <div className="space-y-6">
+        <div className="space-y-4">
           {jobs.map((job) => (
             <JobCard
               key={job.id}

@@ -148,10 +148,10 @@ const CV = () => {
   return (
     <div className="py-4 sm:py-6 animate-fade-in">
       <BackButton className="mb-4" />
-      <div className="mb-4 sm:mb-6 flex flex-col sm:flex-row sm:flex-wrap sm:items-center sm:justify-between gap-4">
+      <div className="mb-4 sm:mb-6 flex flex-col sm:flex-row sm:flex-wrap sm:items-end sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">CV Builder</h1>
-          <p className="mt-1 sm:mt-2 text-slate-600 text-sm sm:text-base">Build your CV and export to PDF</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">CV Builder</h1>
+          <p className="mt-1 sm:mt-2 text-slate-600 dark:text-slate-300 text-sm sm:text-base">Build your CV and export to PDF</p>
         </div>
         <div className="flex flex-col sm:flex-row gap-2 no-print w-full sm:w-auto">
           <button type="button" onClick={handlePrint} className="btn-primary w-full sm:w-auto min-h-[44px]">
@@ -173,9 +173,9 @@ const CV = () => {
       )}
 
       {jobId && (
-        <div className="mb-4 rounded-xl bg-primary-50 border border-primary-200 px-4 py-3 flex items-center gap-2">
+        <div className="mb-4 rounded-xl bg-primary-50 dark:bg-primary-900/30 border border-primary-200 dark:border-primary-800 px-4 py-3 flex items-center gap-2">
           <i className="bx bx-briefcase text-primary-600 text-xl flex-shrink-0" />
-          <p className="text-sm font-medium text-primary-800">You&apos;re building your CV for a specific job. Use &quot;Generate with AI&quot; to get a summary tailored to that role.</p>
+          <p className="text-sm font-medium text-primary-800 dark:text-primary-200">You&apos;re building your CV for a specific job. Use &quot;Generate with AI&quot; to get a summary tailored to that role.</p>
         </div>
       )}
 
@@ -183,7 +183,7 @@ const CV = () => {
         <form onSubmit={handleSave} className="space-y-6 no-print">
           <div className="card p-4 sm:p-6">
             <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
-              <h2 className="text-lg font-semibold text-slate-900">Summary</h2>
+              <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Summary</h2>
               <button
                 type="button"
                 onClick={handleGenerateSummary}
@@ -207,9 +207,9 @@ const CV = () => {
               <p className="text-sm text-amber-700 bg-amber-50 rounded-lg px-3 py-2 mb-3">{aiError}</p>
             )}
             {aiGeneratedSummary && (
-              <div className="mb-4 p-4 rounded-xl border border-primary-200 bg-primary-50/50">
+              <div className="mb-4 p-4 rounded-xl border border-primary-200 dark:border-primary-800 bg-primary-50/50 dark:bg-primary-900/20">
                 <p className="text-xs font-semibold text-primary-800 mb-2">Suggested summary</p>
-                <p className="text-sm text-slate-700 whitespace-pre-wrap mb-3">{aiGeneratedSummary}</p>
+                <p className="text-sm text-slate-700 dark:text-slate-200 whitespace-pre-wrap mb-3">{aiGeneratedSummary}</p>
                 <div className="flex gap-2">
                   <button type="button" onClick={useGeneratedSummary} className="btn-primary text-sm py-2">
                     Use this
@@ -231,14 +231,14 @@ const CV = () => {
 
           <div className="card p-4 sm:p-6">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold text-slate-900">Education</h2>
+              <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Education</h2>
               <button type="button" onClick={addEducation} className="text-sm font-medium text-primary-600 hover:text-primary-700">+ Add</button>
             </div>
             <div className="space-y-4">
               {education.map((e, i) => (
-                <div key={i} className="p-4 rounded-xl border border-slate-200 bg-slate-50/50 space-y-3">
+                <div key={i} className="p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-900/40 space-y-3">
                   <div className="flex justify-between">
-                    <span className="text-sm font-medium text-slate-600">Entry {i + 1}</span>
+                    <span className="text-sm font-medium text-slate-600 dark:text-slate-300">Entry {i + 1}</span>
                     {education.length > 1 && (
                       <button type="button" onClick={() => removeEducation(i)} className="text-sm text-red-600 hover:text-red-700">Remove</button>
                     )}
@@ -260,14 +260,14 @@ const CV = () => {
 
           <div className="card p-4 sm:p-6">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold text-slate-900">Experience</h2>
+              <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Experience</h2>
               <button type="button" onClick={addExperience} className="text-sm font-medium text-primary-600 hover:text-primary-700">+ Add</button>
             </div>
             <div className="space-y-4">
               {experience.map((x, i) => (
-                <div key={i} className="p-4 rounded-xl border border-slate-200 bg-slate-50/50 space-y-3">
+                <div key={i} className="p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-900/40 space-y-3">
                   <div className="flex justify-between">
-                    <span className="text-sm font-medium text-slate-600">Entry {i + 1}</span>
+                    <span className="text-sm font-medium text-slate-600 dark:text-slate-300">Entry {i + 1}</span>
                     {experience.length > 1 && (
                       <button type="button" onClick={() => removeExperience(i)} className="text-sm text-red-600 hover:text-red-700">Remove</button>
                     )}
@@ -291,7 +291,7 @@ const CV = () => {
 
         <div className="lg:sticky lg:top-24 print:static">
           <div className="card p-4 sm:p-6 print:shadow-none print:border-0">
-            <p className="text-sm font-medium text-slate-500 mb-2 print:hidden">Preview</p>
+            <p className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-2 print:hidden">Preview</p>
             <div id="cv-preview" className="bg-white text-slate-800 text-sm print:text-black">
               {previewData && (
                 <>
