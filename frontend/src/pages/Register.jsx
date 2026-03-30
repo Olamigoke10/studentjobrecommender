@@ -54,13 +54,13 @@ const Register = () => {
   };
 
   return (
-    <div className="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-950 via-primary-900 to-indigo-900 py-8 sm:py-12 px-4 overflow-hidden dark:from-slate-950 dark:via-slate-900 dark:to-slate-900">
+    <div className="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-950 via-primary-900 to-accent-900 py-8 sm:py-12 px-4 overflow-hidden dark:from-slate-950 dark:via-slate-900 dark:to-slate-900">
       <div className="pointer-events-none absolute -top-20 -left-20 h-64 w-64 rounded-full bg-primary-400/20 blur-3xl" />
-      <div className="pointer-events-none absolute -bottom-24 -right-16 h-72 w-72 rounded-full bg-blue-400/20 blur-3xl" />
+      <div className="pointer-events-none absolute -bottom-24 -right-16 h-72 w-72 rounded-full bg-accent-400/25 blur-3xl" />
       <div className="w-full max-w-5xl animate-fade-in">
         <div className="overflow-hidden rounded-3xl border border-white/25 bg-white/10 backdrop-blur-sm shadow-2xl dark:border-slate-700/60 dark:bg-slate-900/40">
           <div className="grid lg:grid-cols-2">
-            <section className="hidden lg:flex flex-col justify-between p-10 bg-gradient-to-br from-primary-600 to-indigo-700 text-white dark:from-slate-900 dark:to-primary-900">
+            <section className="hidden lg:flex flex-col justify-between p-10 bg-gradient-to-br from-primary-700 to-accent-600 text-white dark:from-slate-900 dark:to-primary-900">
               <div>
                 <img src={talentPathLogo} alt="Talent Path" className="h-12 w-12 rounded-xl object-cover mb-6" />
                 <h2 className="text-3xl font-bold leading-tight">

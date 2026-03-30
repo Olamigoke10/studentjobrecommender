@@ -77,7 +77,7 @@ const Navbar = () => {
                       to={to}
                       className={`px-3 py-2 rounded-xl text-xs font-medium whitespace-nowrap transition-all duration-200 ${
                         isActive
-                          ? 'bg-gradient-to-r from-primary-50 to-indigo-50 text-primary-700 border border-primary-100'
+                          ? 'bg-gradient-to-r from-primary-50 to-accent-50 text-primary-700 border border-primary-100'
                           : 'text-slate-600 hover:bg-white/70 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-900/80 dark:hover:text-slate-100'
                       }`}
                     >
@@ -148,7 +148,7 @@ const Navbar = () => {
                   onClick={() => setMobileMenuOpen(false)}
                   className={`flex items-center min-h-[48px] px-4 rounded-xl text-base font-medium transition-colors ${
                     isActive
-                      ? 'bg-gradient-to-r from-primary-50 to-indigo-50 text-primary-700 border border-primary-100'
+                      ? 'bg-gradient-to-r from-primary-50 to-accent-50 text-primary-700 border border-primary-100'
                       : 'text-slate-700 hover:bg-white/80 dark:text-slate-300 dark:hover:bg-slate-900/80'
                   }`}
                 >
