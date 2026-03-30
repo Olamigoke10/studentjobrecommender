@@ -1,0 +1,6 @@
+# Environment files
+*.env
+*.env.*
+
+# Keep backend secrets local
+student-job-recommender/backend/backend/.env
