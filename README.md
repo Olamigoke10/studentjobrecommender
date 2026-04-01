@@ -68,6 +68,7 @@ A full-stack app for students to browse graduate jobs, save favourites, get pers
 - `SECRET_KEY` – Django secret (set in production)
 - `ADZUNA_APP_ID`, `ADZUNA_APP_KEY` – For job feed (Adzuna, country `gb`)
 - `CORS_ALLOWED_ORIGINS` or allow your frontend origin
+- **Optional (no Shell required):** `BOOTSTRAP_ADMIN_EMAIL` and `BOOTSTRAP_ADMIN_PASSWORD` – on deploy, run `python manage.py bootstrap_staff_from_env` (see below) to create or promote your in-app **Admin** user. Remove or clear these after the first successful deploy if you prefer not to keep a password in env.
 
 ### Frontend
 
@@ -75,5 +76,10 @@ A full-stack app for students to browse graduate jobs, save favourites, get pers
 
 ## Deploy
 
-- **Backend** – Render (Web Service); add Release Command: `python manage.py migrate --noinput`
+- **Backend** – Render (Web Service)
+  - **Release Command** (often available even when Shell is not):  
+    `cd backend && python manage.py migrate --noinput && python manage.py bootstrap_staff_from_env`  
+    (Adjust `cd backend` if your Render root differs.)
+  - In Render **Environment**, set `BOOTSTRAP_ADMIN_EMAIL` and `BOOTSTRAP_ADMIN_PASSWORD` for the first deploy (creates a superuser, or promotes an existing user with that email). Then log in on your **production** frontend and open **Admin** to manage skills.
+  - Optional: `BOOTSTRAP_ADMIN_USERNAME` – defaults to the same value as the email (`username` is required by the user model).
 - **Frontend** – Vercel; set Root Directory to `frontend`; add `VITE_API_BASE_URL`
