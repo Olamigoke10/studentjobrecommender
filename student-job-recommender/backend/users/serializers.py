@@ -45,9 +45,16 @@ class SkillSerializer(serializers.ModelSerializer):
         model = Skill
         fields = ["id", "name"]
 
+    def validate_name(self, value):
+        v = (value or "").strip()
+        if not v:
+            raise serializers.ValidationError("This field may not be blank.")
+        return v
+
 
 class StudentProfileSerializer(serializers.ModelSerializer):
     email = serializers.EmailField(source="user.email", read_only=True)
+    is_staff = serializers.BooleanField(source="user.is_staff", read_only=True)
     skills = SkillSerializer(many=True, read_only=True)
     profile_completeness_percent = serializers.SerializerMethodField()
 
@@ -61,6 +68,7 @@ class StudentProfileSerializer(serializers.ModelSerializer):
         model = StudentProfile
         fields = [
             "email",
+            "is_staff",
             "name",
             "skills",
             "skills_ids",

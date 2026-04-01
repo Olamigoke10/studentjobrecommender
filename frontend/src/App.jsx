@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './auth/AuthContext';
 import ProtectedRoute from './auth/ProtectedRoute';
+import StaffRoute from './auth/StaffRoute';
 import Navbar from './components/Navbar';
 import Login from './pages/Login';
 import Register from './pages/Register';
@@ -11,6 +12,7 @@ import Recommendations from './pages/Recommendations';
 import Profile from './pages/Profile';
 import Applications from './pages/Applications';
 import CV from './pages/CV';
+import AdminDashboard from './pages/AdminDashboard';
 import { ROUTES } from './utils/constants'
 
 function App() {
@@ -83,6 +85,14 @@ function App() {
                   <ProtectedRoute>
                     <CV />
                   </ProtectedRoute>
+                }
+              />
+              <Route
+                path={ROUTES.ADMIN}
+                element={
+                  <StaffRoute>
+                    <AdminDashboard />
+                  </StaffRoute>
                 }
               />
             </Routes>

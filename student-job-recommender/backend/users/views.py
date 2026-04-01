@@ -15,7 +15,7 @@ from .serializers import (
 )
 from .models import StudentProfile, Skill, Education, Experience
 from .token import EmailTokenObtainPairSerializer
-from jobs.models import Job
+from jobs.models import Job, SavedJob, ApplicationTracker
 from rest_framework_simplejwt.views import TokenObtainPairView
 
 class RegisterView(generics.CreateAPIView):
@@ -44,6 +44,33 @@ class SkillListView(views.APIView):
         skills = Skill.objects.all().order_by('name')
         serializer = SkillSerializer(skills, many=True)
         return Response(serializer.data)
+
+
+class AdminStatsView(views.APIView):
+    """Aggregate counts for staff dashboard."""
+    permission_classes = [permissions.IsAdminUser]
+
+    def get(self, request):
+        return Response({
+            "users_count": User.objects.count(),
+            "student_profiles_count": StudentProfile.objects.count(),
+            "jobs_count": Job.objects.count(),
+            "skills_count": Skill.objects.count(),
+            "saved_jobs_count": SavedJob.objects.count(),
+            "applications_count": ApplicationTracker.objects.count(),
+        })
+
+
+class AdminSkillListCreateView(generics.ListCreateAPIView):
+    permission_classes = [permissions.IsAdminUser]
+    queryset = Skill.objects.all().order_by("name")
+    serializer_class = SkillSerializer
+
+
+class AdminSkillDetailView(generics.RetrieveUpdateDestroyAPIView):
+    permission_classes = [permissions.IsAdminUser]
+    queryset = Skill.objects.all().order_by("name")
+    serializer_class = SkillSerializer
 
 
 class CourseListView(views.APIView):

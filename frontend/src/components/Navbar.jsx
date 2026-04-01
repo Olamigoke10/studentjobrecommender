@@ -17,6 +17,9 @@ const Navbar = () => {
   const { user, logout, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const links = user?.is_staff
+    ? [...navLinks, { to: ROUTES.ADMIN, label: 'Admin' }]
+    : navLinks;
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [theme, setTheme] = useState('light');
 
@@ -69,7 +72,7 @@ const Navbar = () => {
                 <span className="truncate">Talent Path</span>
               </Link>
               <div className="hidden md:flex items-center gap-1">
-                {navLinks.map(({ to, label }) => {
+                {links.map(({ to, label }) => {
                   const isActive = location.pathname === to;
                   return (
                     <Link
@@ -139,7 +142,7 @@ const Navbar = () => {
                 {user?.name || user?.email || 'User'}
               </span>
             </div>
-            {navLinks.map(({ to, label }) => {
+            {links.map(({ to, label }) => {
               const isActive = location.pathname === to;
               return (
                 <Link
