@@ -34,6 +34,34 @@ def _extract_interest_keywords(jobs_qs, max_keywords=12):
     return [w for w, _ in counts.most_common(max_keywords)]
 
 
+def _recommendation_max_possible(
+    preferred_location, preferred_job_type, course, skill_names, interest_keywords
+):
+    """Upper bound for raw match_score given which profile signals exist (mirrors per-job caps)."""
+    m = 0
+    if preferred_location:
+        m += 2
+    if preferred_job_type:
+        m += 3
+    if course:
+        m += 3
+    if skill_names:
+        m += 5
+    if interest_keywords:
+        m += 8
+    return max(m, 1)
+
+
+def _match_tier_from_percent(percent):
+    if percent >= 80:
+        return "Strong"
+    if percent >= 50:
+        return "Good"
+    if percent >= 25:
+        return "Fair"
+    return "Low"
+
+
 class RecommendedJobsView(views.APIView):
     permission_classes = [permissions.IsAuthenticated]
 
@@ -85,6 +113,14 @@ class RecommendedJobsView(views.APIView):
 
         qs = qs.filter(search_q).distinct().order_by("-posted_date", "-cached_at")[:50]
 
+        max_possible = _recommendation_max_possible(
+            preferred_location,
+            preferred_job_type,
+            student.course,
+            skill_names,
+            interest_keywords,
+        )
+
         results = []
         for job in qs:
             score = 0
@@ -127,6 +163,8 @@ class RecommendedJobsView(views.APIView):
 
             if score > 0:
                 job.match_score = score
+                job.match_percent = min(100, round(100 * score / max_possible))
+                job.match_tier = _match_tier_from_percent(job.match_percent)
                 job.recommended_reason = reasons
                 results.append(job)
 

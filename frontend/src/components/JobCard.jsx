@@ -34,9 +34,22 @@ export default function JobCard({
             <h3 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-slate-100 leading-tight">
               {job.title}
             </h3>
-            {showMatchScore && job.match_score != null && (
-              <span className="inline-flex items-center px-2.5 py-0.5 rounded-lg text-xs font-semibold bg-violet-100 text-violet-700">
-                Match {job.match_score}
+            {showMatchScore && (job.match_percent != null || job.match_score != null) && (
+              <span
+                className="inline-flex items-center px-2.5 py-0.5 rounded-lg text-xs font-semibold bg-violet-100 text-violet-700 dark:bg-violet-900/40 dark:text-violet-200"
+                title={
+                  job.match_percent != null && job.match_score != null
+                    ? `${job.match_percent}% · ${job.match_score} points`
+                    : undefined
+                }
+              >
+                {job.match_percent != null ? (
+                  <>
+                    {job.match_tier ? `${job.match_tier} match` : 'Match'} · {job.match_percent}%
+                  </>
+                ) : (
+                  <>Match {job.match_score}</>
+                )}
               </span>
             )}
             {job.job_type && (
