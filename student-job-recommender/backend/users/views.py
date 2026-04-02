@@ -1,4 +1,12 @@
-from django.shortcuts import render
+from urllib.parse import urlencode
+
+from django.conf import settings
+from django.contrib.auth.password_validation import validate_password
+from django.contrib.auth.tokens import default_token_generator
+from django.core.exceptions import ValidationError as DjangoValidationError
+from django.core.mail import send_mail
+from django.utils.encoding import force_bytes, force_str
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 
 # Create your views here.
 from rest_framework import generics, permissions, views, status
@@ -13,6 +21,8 @@ from .serializers import (
     EducationSerializer,
     ExperienceSerializer,
     CVSerializer,
+    PasswordResetRequestSerializer,
+    PasswordResetConfirmSerializer,
     User,
 )
 from .models import StudentProfile, Skill, SkillField, Education, Experience
@@ -37,6 +47,91 @@ class StudentProfileView(generics.RetrieveUpdateAPIView):
 
 class EmailTokenObtainPairView(TokenObtainPairView):
     serializer_class = EmailTokenObtainPairSerializer
+
+
+class PasswordResetRequestView(views.APIView):
+    """POST { email } — sends reset link (same response whether user exists)."""
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request):
+        serializer = PasswordResetRequestSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        email = serializer.validated_data["email"].strip().lower()
+        user = User.objects.filter(email__iexact=email).first()
+
+        generic_msg = (
+            "If an account exists for this email, you will receive password reset instructions shortly."
+        )
+
+        if user:
+            uid = urlsafe_base64_encode(force_bytes(user.pk))
+            token = default_token_generator.make_token(user)
+            frontend = getattr(settings, "FRONTEND_URL", "http://localhost:5173").rstrip("/")
+            query = urlencode({"uid": uid, "token": token})
+            reset_url = f"{frontend}/reset-password?{query}"
+            subject = "Reset your Talent Path password"
+            body = (
+                f"Hi,\n\n"
+                f"We received a request to reset the password for your account.\n\n"
+                f"Open this link to choose a new password (it expires after a while):\n{reset_url}\n\n"
+                f"If you did not request this, you can ignore this email.\n"
+            )
+            try:
+                send_mail(
+                    subject,
+                    body,
+                    settings.DEFAULT_FROM_EMAIL,
+                    [user.email],
+                    fail_silently=False,
+                )
+            except Exception:
+                return Response(
+                    {
+                        "detail": "We could not send the reset email. Check server email settings or try again later.",
+                    },
+                    status=status.HTTP_503_SERVICE_UNAVAILABLE,
+                )
+
+        return Response({"detail": generic_msg}, status=status.HTTP_200_OK)
+
+
+class PasswordResetConfirmView(views.APIView):
+    """POST { uid, token, new_password } — completes reset after user follows email link."""
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request):
+        serializer = PasswordResetConfirmSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        uid_b64 = serializer.validated_data["uid"]
+        token = serializer.validated_data["token"]
+        new_password = serializer.validated_data["new_password"]
+
+        try:
+            uid = force_str(urlsafe_base64_decode(uid_b64))
+            user = User.objects.get(pk=uid)
+        except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+            return Response(
+                {"detail": "Invalid or expired reset link. Please request a new one."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if not default_token_generator.check_token(user, token):
+            return Response(
+                {"detail": "Invalid or expired reset link. Please request a new one."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            validate_password(new_password, user=user)
+        except DjangoValidationError as e:
+            return Response(
+                {"new_password": list(e.messages)},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        user.set_password(new_password)
+        user.save()
+        return Response({"detail": "Your password has been reset. You can sign in now."}, status=status.HTTP_200_OK)
 
 
 class SkillListView(views.APIView):

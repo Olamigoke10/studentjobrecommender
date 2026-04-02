@@ -41,6 +41,16 @@ class RegisterSerializer(serializers.ModelSerializer):
         return user
 
 
+class PasswordResetRequestSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+
+
+class PasswordResetConfirmSerializer(serializers.Serializer):
+    uid = serializers.CharField()
+    token = serializers.CharField()
+    new_password = serializers.CharField(min_length=8, write_only=True)
+
+
 class SkillFieldSerializer(serializers.ModelSerializer):
     class Meta:
         model = SkillField

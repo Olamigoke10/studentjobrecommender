@@ -221,6 +221,11 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+# Password reset emails (link points to SPA — set FRONTEND_URL in production)
+FRONTEND_URL = config('FRONTEND_URL', default='http://localhost:5173')
+EMAIL_BACKEND = config('EMAIL_BACKEND', default='django.core.mail.backends.console.EmailBackend')
+DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='noreply@studentjob.local')
+
 # Simple JWT settings
 SIMPLE_JWT ={
     "USER_ID_FIELD": "id",

@@ -6,6 +6,12 @@ export const authAPI = {
   
   register: (userData) => 
     axiosInstance.post('/api/users/register/', userData),
+
+  requestPasswordReset: (email) =>
+    axiosInstance.post('/api/users/password-reset/', { email }),
+
+  confirmPasswordReset: ({ uid, token, new_password }) =>
+    axiosInstance.post('/api/users/password-reset/confirm/', { uid, token, new_password }),
   
   refreshToken: (refresh) => 
     axiosInstance.post('/api/users/token/refresh/', { refresh }),

@@ -108,6 +108,14 @@ const Login = () => {
                       <i className={`bx text-xl ${showPassword ? 'bx-hide' : 'bx-show'}`} />
                     </button>
                   </div>
+                  <div className="mt-2 text-right">
+                    <Link
+                      to={ROUTES.FORGOT_PASSWORD}
+                      className="text-sm font-medium text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300"
+                    >
+                      Forgot password?
+                    </Link>
+                  </div>
                 </div>
 
                 <button
