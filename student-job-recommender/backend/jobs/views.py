@@ -14,6 +14,44 @@ class JobListPagination(PageNumberPagination):
     max_page_size = 100
 
 
+def _job_type_filter_q(user_value: str) -> Q:
+    """
+    Match UI job type labels against stored job_type and legacy Adzuna raw values
+    (e.g. full_time) and obvious title/location hints for Remote.
+    """
+    raw = (user_value or "").strip()
+    if not raw:
+        return Q(pk__in=[])
+
+    key = raw.lower().replace(" ", "-").replace("_", "-")
+    synonyms = {
+        "full-time": ["full_time", "full time", "fulltime", "permanent"],
+        "part-time": ["part_time", "part time", "parttime"],
+        "contract": ["contract", "temporary"],
+        "internship": ["internship", "placement", "graduate scheme"],
+        "remote": ["remote", "wfh", "home-based", "work from home"],
+    }
+    variants = synonyms.get(key, [])
+    normalized = raw.replace("-", " ").replace("_", " ").strip()
+    q = (
+        Q(job_type__iexact=raw)
+        | Q(job_type__icontains=raw)
+        | Q(job_type__icontains=normalized)
+    )
+    for v in variants:
+        q |= Q(job_type__icontains=v)
+    if key == "remote":
+        q |= (
+            Q(location__icontains="remote")
+            | Q(location__icontains="work from home")
+            | Q(title__icontains="remote")
+            | Q(title__icontains="work from home")
+        )
+    if key == "internship":
+        q |= Q(title__icontains="internship") | Q(title__icontains="placement")
+    return q
+
+
 # Create your views here.
 class JobListView(generics.ListAPIView):
     serializer_class = JobSerializer
@@ -34,11 +72,7 @@ class JobListView(generics.ListAPIView):
         if location:
             qs = qs.filter(location__icontains=location)
         if job_type:
-            # Match both "Full-time" and "Full time" / "full_time" etc.
-            normalized = job_type.replace("-", " ").replace("_", " ").strip()
-            qs = qs.filter(
-                Q(job_type__icontains=job_type) | Q(job_type__icontains=normalized)
-            )
+            qs = qs.filter(_job_type_filter_q(job_type))
         return qs
     
 

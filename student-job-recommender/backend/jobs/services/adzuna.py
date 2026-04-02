@@ -1,3 +1,4 @@
+import re
 import requests
 from decouple import config
 from datetime import datetime
@@ -62,6 +63,53 @@ def fetch_jobs(search="graduate", location="United Kingdom", results_per_page=50
         }
 
 
+def canonical_job_type_from_adzuna(j: dict) -> str:
+    """
+    Map Adzuna fields to labels that match the Browse Jobs filter (frontend JOB_TYPES).
+    Adzuna uses snake_case contract_time (e.g. full_time); the UI sends Title Case with hyphen.
+    """
+    title = (j.get("title") or "")
+    loc = ((j.get("location") or {}).get("display_name") or "").lower()
+    title_l = title.lower()
+    ct = (j.get("contract_time") or "").strip().lower().replace("-", "_")
+    ty = (j.get("contract_type") or "").strip().lower().replace("-", "_")
+    cat = ((j.get("category") or {}).get("label") or "").lower()
+
+    if any(
+        x in loc
+        for x in ("remote", "work from home", "wfh", "home-based", "fully remote")
+    ):
+        return "Remote"
+    if any(
+        x in title_l
+        for x in (
+            "remote",
+            "work from home",
+            "wfh",
+            "home-based",
+            "fully remote",
+        )
+    ):
+        return "Remote"
+
+    if ct in ("full_time", "fulltime"):
+        return "Full-time"
+    if ct in ("part_time", "parttime"):
+        return "Part-time"
+    if ty in ("contract",) or ct in ("contract",):
+        return "Contract"
+    if ty == "permanent" and ct in ("part_time", "parttime"):
+        return "Part-time"
+    if ty == "permanent" and ct in ("full_time", "fulltime", "", "unspecified"):
+        return "Full-time"
+
+    if "intern" in cat or re.search(r"\bintern(ship|s)?\b", title_l):
+        return "Internship"
+
+    raw = (j.get("contract_time") or j.get("contract_type") or "")[:50]
+    return raw
+
+
 def clean_job(j: dict) -> dict:
     return {
         "external_id": str(j.get("id", "")).strip(),
@@ -110,7 +158,7 @@ def upsert_jobs_from_adzuna(results: list[dict], source: str = "adzuna"):
             "company": ((j.get("company") or {}).get("display_name") or "")[:200],
             "location": ((j.get("location") or {}).get("display_name") or "")[:200],
             "description": j.get("description") or "",
-            "job_type": ((j.get("contract_time") or j.get("contract_type") or "")[:50]),
+            "job_type": (canonical_job_type_from_adzuna(j)[:50]),
             "url": (j.get("redirect_url") or ""),
             "posted_date": _parse_posted_date(j.get("created")),
         }
