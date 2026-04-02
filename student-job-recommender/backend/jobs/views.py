@@ -52,6 +52,35 @@ def _job_type_filter_q(user_value: str) -> Q:
     return q
 
 
+def _keyword_search_q(search: str) -> Q:
+    """
+    Match role keywords like a typical job search: each word must appear somewhere in
+    title, company, or description (not necessarily as one exact phrase in one field).
+    Hyphenated terms also try a space variant (e.g. full-stack vs full stack).
+    """
+    terms = [t.strip() for t in search.split() if t.strip()]
+    if not terms:
+        return Q(pk__in=[])
+    combined = Q()
+    for term in terms:
+        variants = {term}
+        if "-" in term or "_" in term:
+            variants.add(
+                term.replace("-", " ").replace("_", " ").replace("  ", " ").strip()
+            )
+        term_q = Q()
+        for v in variants:
+            if not v:
+                continue
+            term_q |= (
+                Q(title__icontains=v)
+                | Q(company__icontains=v)
+                | Q(description__icontains=v)
+            )
+        combined &= term_q
+    return combined
+
+
 # Create your views here.
 class JobListView(generics.ListAPIView):
     serializer_class = JobSerializer
@@ -64,11 +93,7 @@ class JobListView(generics.ListAPIView):
         location = (self.request.query_params.get("location") or "").strip()
         job_type = (self.request.query_params.get("job_type") or "").strip()
         if search:
-            qs = qs.filter(
-                Q(title__icontains=search)
-                | Q(company__icontains=search)
-                | Q(description__icontains=search)
-            )
+            qs = qs.filter(_keyword_search_q(search))
         if location:
             qs = qs.filter(location__icontains=location)
         if job_type:
