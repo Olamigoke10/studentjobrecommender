@@ -224,7 +224,28 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # Password reset emails: link must open your SPA (not the API host). Set on Render, e.g.
 # FRONTEND_URL=https://your-app.netlify.app
 FRONTEND_URL = config('FRONTEND_URL', default='http://localhost:5173')
-EMAIL_BACKEND = config('EMAIL_BACKEND', default='django.core.mail.backends.console.EmailBackend')
+
+# Email: without EMAIL_HOST, mail only prints to the server console (no inbox delivery).
+# For real email, set these env vars on Render (or .env locally), e.g. SendGrid:
+#   EMAIL_HOST=smtp.sendgrid.net  EMAIL_PORT=587  EMAIL_USE_TLS=true
+#   EMAIL_HOST_USER=apikey  EMAIL_HOST_PASSWORD=<your-sendgrid-api-key>
+#   DEFAULT_FROM_EMAIL=verified-sender@yourdomain.com
+# Gmail (use an App Password): EMAIL_HOST=smtp.gmail.com  EMAIL_HOST_USER=you@gmail.com  EMAIL_HOST_PASSWORD=...
+_EMAIL_HOST = (config('EMAIL_HOST', default='') or '').strip()
+if _EMAIL_HOST:
+    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+    EMAIL_HOST = _EMAIL_HOST
+    EMAIL_PORT = config('EMAIL_PORT', default=587, cast=int)
+    EMAIL_USE_TLS = config('EMAIL_USE_TLS', default=True, cast=bool)
+    EMAIL_USE_SSL = config('EMAIL_USE_SSL', default=False, cast=bool)
+    EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='')
+    EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
+else:
+    EMAIL_BACKEND = config(
+        'EMAIL_BACKEND',
+        default='django.core.mail.backends.console.EmailBackend',
+    )
+
 DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='noreply@studentjob.local')
 
 # Simple JWT settings
