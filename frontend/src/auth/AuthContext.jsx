@@ -1,4 +1,11 @@
-import React, { createContext, useState, useEffect, useContext } from 'react';
+import React, {
+  createContext,
+  useState,
+  useEffect,
+  useContext,
+  useCallback,
+  useMemo,
+} from 'react';
 import { authAPI } from '../api/auth.api';
 import { TokenService } from '../utils/token';
 import axios from 'axios';
@@ -47,7 +54,7 @@ export const AuthProvider = ({ children }) => {
 
 
 
-const login = async (email, password) => {
+  const login = useCallback(async (email, password) => {
   setError(null);
   const normalizedEmail = (email || "").trim().toLowerCase();
 
@@ -82,9 +89,9 @@ const login = async (email, password) => {
     setError(message);
     return { success: false, message };
   }
-};
+}, []);
 
-  const register = async (userData) => {
+  const register = useCallback(async (userData) => {
     setError(null);
     try {
       await authAPI.register(userData);
@@ -121,27 +128,30 @@ const login = async (email, password) => {
       setError(message);
       return { success: false, message };
     }
-  };
+  }, [login]);
 
-  const logout = () => {
+  const logout = useCallback(() => {
     TokenService.removeTokens();
     setUser(null);
-  };
+  }, []);
 
-  const updateUser = (updatedUser) => {
+  const updateUser = useCallback((updatedUser) => {
     setUser((prev) => (prev ? { ...prev, ...updatedUser } : updatedUser));
-  };
+  }, []);
 
-  const value = {
-    user,
-    loading,
-    error,
-    login,
-    register,
-    logout,
-    updateUser,
-    isAuthenticated: TokenService.isAuthenticated,
-  };
+  const value = useMemo(
+    () => ({
+      user,
+      loading,
+      error,
+      login,
+      register,
+      logout,
+      updateUser,
+      isAuthenticated: TokenService.isAuthenticated,
+    }),
+    [user, loading, error, login, register, logout, updateUser]
+  );
 
   return (
     <AuthContext.Provider value={value}>

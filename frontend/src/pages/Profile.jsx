@@ -30,13 +30,23 @@ const Profile = () => {
   const [courses, setCourses] = useState(FALLBACK_COURSES);
   const [profileLoaded, setProfileLoaded] = useState(false);
 
-  const loadSkills = useCallback(async (courseValue) => {
+  const loadSkills = useCallback(async (courseValue, profileSkills) => {
     try {
       const response = await authAPI.getSkills(courseValue);
-      const nextSkills = response.data || [];
-      setSkills(nextSkills);
+      const raw = response.data;
+      const nextSkills = Array.isArray(raw) ? raw : [];
+      const skillsForUi =
+        nextSkills.length > 0
+          ? nextSkills
+          : Array.isArray(profileSkills) && profileSkills.length > 0
+            ? profileSkills
+            : [];
+      setSkills(skillsForUi);
       const allowedIds = new Set(nextSkills.map((s) => s.id));
       setFormData((prev) => {
+        if (nextSkills.length === 0) {
+          return prev;
+        }
         const filteredIds = prev.skills_ids.filter((id) => allowedIds.has(id));
         if (filteredIds.length === prev.skills_ids.length) {
           return prev;
@@ -86,8 +96,8 @@ const Profile = () => {
 
   useEffect(() => {
     if (!profileLoaded) return;
-    loadSkills(formData.course);
-  }, [formData.course, profileLoaded, loadSkills]);
+    loadSkills(formData.course, user?.skills);
+  }, [formData.course, profileLoaded, loadSkills, user?.skills]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -181,7 +191,7 @@ const Profile = () => {
             {selectedSkillsCount} skill{selectedSkillsCount !== 1 ? 's' : ''} selected
           </span>
           <span className="px-3 py-1.5 rounded-full bg-white/80 dark:bg-slate-900/80 border border-slate-200/70 dark:border-slate-700/70">
-            {formData.preferred_job_type.replace('_', ' ')}
+            {formData.preferred_job_type.replaceAll('_', ' ')}
           </span>
         </div>
       </div>

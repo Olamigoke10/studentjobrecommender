@@ -7,6 +7,7 @@ const API_BASE_URL =
 const axiosInstance = axios.create({
   baseURL: API_BASE_URL,
   headers: { "Content-Type": "application/json" },
+  timeout: 45000,
 });
 
 // ✅ Add token to every request (except login/register/refresh)
