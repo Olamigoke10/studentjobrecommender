@@ -18,9 +18,18 @@ const ForgotPassword = () => {
       await authAPI.requestPasswordReset(email.trim().toLowerCase());
       setSubmitted(true);
     } catch (err) {
+      if (!err.response) {
+        setError(
+          'Could not reach the server. Check your connection and that the API URL is correct (VITE_API_URL).'
+        );
+        return;
+      }
       const msg =
         err.response?.data?.email?.[0] ||
         err.response?.data?.detail ||
+        (err.response?.status === 503
+          ? 'Email could not be sent. The server mail settings may need to be configured (SMTP, etc.).'
+          : null) ||
         'Something went wrong. Please try again.';
       setError(typeof msg === 'string' ? msg : 'Please check your email and try again.');
     } finally {

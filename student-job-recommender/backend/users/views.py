@@ -6,6 +6,7 @@ from django.contrib.auth.tokens import default_token_generator
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.core.mail import send_mail
 from django.utils.encoding import force_bytes, force_str
+from django.utils.html import escape
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 
 # Create your views here.
@@ -66,23 +67,35 @@ class PasswordResetRequestView(views.APIView):
         if user:
             uid = urlsafe_base64_encode(force_bytes(user.pk))
             token = default_token_generator.make_token(user)
-            frontend = getattr(settings, "FRONTEND_URL", "http://localhost:5173").rstrip("/")
+            # Avoid empty env FRONTEND_URL (broken relative links) — SPA origin must match deployed app
+            _fe = (getattr(settings, "FRONTEND_URL", None) or "").strip()
+            frontend = (_fe or "http://localhost:5173").rstrip("/")
             query = urlencode({"uid": uid, "token": token})
             reset_url = f"{frontend}/reset-password?{query}"
             subject = "Reset your Talent Path password"
-            body = (
-                f"Hi,\n\n"
-                f"We received a request to reset the password for your account.\n\n"
-                f"Open this link to choose a new password (it expires after a while):\n{reset_url}\n\n"
-                f"If you did not request this, you can ignore this email.\n"
+            # Plain text: keep URL on one line so MIME line-wrapping cannot split the token
+            body_plain = (
+                "Hi,\n\n"
+                "We received a request to reset the password for your account.\n\n"
+                "Use the link below to choose a new password (it expires after a while).\n\n"
+                f"{reset_url}\n\n"
+                "If you did not request this, you can ignore this email.\n"
+            )
+            # HTML: single href avoids broken links when tokens contain '=' (QP wrapping in plain text)
+            html_message = (
+                "<p>Hi,</p>"
+                "<p>We received a request to reset the password for your account.</p>"
+                '<p><a href="' + escape(reset_url) + '">Set a new password</a></p>'
+                "<p>If you did not request this, you can ignore this email.</p>"
             )
             try:
                 send_mail(
                     subject,
-                    body,
+                    body_plain,
                     settings.DEFAULT_FROM_EMAIL,
                     [user.email],
                     fail_silently=False,
+                    html_message=html_message,
                 )
             except Exception:
                 return Response(
