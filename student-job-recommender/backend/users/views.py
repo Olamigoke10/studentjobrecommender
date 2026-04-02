@@ -4,16 +4,18 @@ from django.shortcuts import render
 from rest_framework import generics, permissions, views, status
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
+from .skill_query import skills_queryset_for_course
 from .serializers import (
     RegisterSerializer,
     StudentProfileSerializer,
     SkillSerializer,
+    SkillFieldSerializer,
     EducationSerializer,
     ExperienceSerializer,
     CVSerializer,
     User,
 )
-from .models import StudentProfile, Skill, Education, Experience
+from .models import StudentProfile, Skill, SkillField, Education, Experience
 from .token import EmailTokenObtainPairSerializer
 from jobs.models import Job, SavedJob, ApplicationTracker
 from rest_framework_simplejwt.views import TokenObtainPairView
@@ -41,9 +43,24 @@ class SkillListView(views.APIView):
     permission_classes = [permissions.AllowAny]
     
     def get(self, request):
-        skills = Skill.objects.all().order_by('name')
+        course = (request.query_params.get("course") or "").strip()
+        if not course and request.user and request.user.is_authenticated:
+            profile = getattr(request.user, "profile", None)
+            course = (getattr(profile, "course", "") or "").strip()
+        if course:
+            skills = skills_queryset_for_course(course)
+        else:
+            skills = Skill.objects.all().prefetch_related("fields").order_by("name")
         serializer = SkillSerializer(skills, many=True)
         return Response(serializer.data)
+
+
+class SkillFieldListView(views.APIView):
+    permission_classes = [permissions.IsAdminUser]
+
+    def get(self, request):
+        fields = SkillField.objects.all().order_by("name")
+        return Response(SkillFieldSerializer(fields, many=True).data)
 
 
 class AdminStatsView(views.APIView):
@@ -56,6 +73,7 @@ class AdminStatsView(views.APIView):
             "student_profiles_count": StudentProfile.objects.count(),
             "jobs_count": Job.objects.count(),
             "skills_count": Skill.objects.count(),
+            "skill_fields_count": SkillField.objects.count(),
             "saved_jobs_count": SavedJob.objects.count(),
             "applications_count": ApplicationTracker.objects.count(),
         })
@@ -63,13 +81,13 @@ class AdminStatsView(views.APIView):
 
 class AdminSkillListCreateView(generics.ListCreateAPIView):
     permission_classes = [permissions.IsAdminUser]
-    queryset = Skill.objects.all().order_by("name")
+    queryset = Skill.objects.all().prefetch_related("fields").order_by("name")
     serializer_class = SkillSerializer
 
 
 class AdminSkillDetailView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [permissions.IsAdminUser]
-    queryset = Skill.objects.all().order_by("name")
+    queryset = Skill.objects.all().prefetch_related("fields").order_by("name")
     serializer_class = SkillSerializer
 
 

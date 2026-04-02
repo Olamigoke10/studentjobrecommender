@@ -77,9 +77,12 @@ A full-stack app for students to browse graduate jobs, save favourites, get pers
 ## Deploy
 
 - **Backend** – Render (Web Service)
+  - **Build Command** (example; root = folder containing `manage.py` and `requirements.txt`):  
+    `pip install -r requirements.txt && python manage.py collectstatic --noinput`
   - **Release Command** (often available even when Shell is not):  
-    `cd backend && python manage.py migrate --noinput && python manage.py bootstrap_staff_from_env`  
-    (Adjust `cd backend` if your Render root differs.)
+    `python manage.py migrate --noinput && python manage.py bootstrap_staff_from_env`  
+    (Command name is **`bootstrap_staff_from_env`** — use `python manage.py …`, not a bare `bootstrap_…` shell command.)
+  - If your Render **root directory** is the repo root instead of `backend`, prefix with `cd student-job-recommender/backend &&` (adjust paths to match your service).
   - In Render **Environment**, set `BOOTSTRAP_ADMIN_EMAIL` and `BOOTSTRAP_ADMIN_PASSWORD` for the first deploy (creates a superuser, or promotes an existing user with that email). Then log in on your **production** frontend and open **Admin** to manage skills.
   - Optional: `BOOTSTRAP_ADMIN_USERNAME` – defaults to the same value as the email (`username` is required by the user model).
 - **Frontend** – Vercel; set Root Directory to `frontend`; add `VITE_API_BASE_URL`

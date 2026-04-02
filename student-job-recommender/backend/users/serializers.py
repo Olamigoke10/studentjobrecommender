@@ -1,7 +1,8 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from django.db import transaction
-from .models import StudentProfile, Skill, Education, Experience
+from .models import StudentProfile, Skill, SkillField, Education, Experience
+from .skill_query import allowed_skill_ids_for_course
 
 User = get_user_model()
 
@@ -40,16 +41,56 @@ class RegisterSerializer(serializers.ModelSerializer):
         return user
 
 
+class SkillFieldSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SkillField
+        fields = ["id", "name"]
+
+
 class SkillSerializer(serializers.ModelSerializer):
+    fields = SkillFieldSerializer(many=True, read_only=True)
+    field_ids = serializers.ListField(
+        child=serializers.IntegerField(),
+        write_only=True,
+        required=False,
+        allow_null=True,
+    )
+
     class Meta:
         model = Skill
-        fields = ["id", "name"]
+        fields = ["id", "name", "fields", "field_ids"]
 
     def validate_name(self, value):
         v = (value or "").strip()
         if not v:
             raise serializers.ValidationError("This field may not be blank.")
         return v
+
+    def validate_field_ids(self, value):
+        if value is None:
+            return None
+        unique_ids = list({int(x) for x in value})
+        existing = set(SkillField.objects.filter(id__in=unique_ids).values_list("id", flat=True))
+        unknown = set(unique_ids) - existing
+        if unknown:
+            raise serializers.ValidationError(
+                f"Unknown field id(s): {', '.join(str(i) for i in sorted(unknown))}"
+            )
+        return unique_ids
+
+    def create(self, validated_data):
+        field_ids = validated_data.pop("field_ids", None)
+        instance = super().create(validated_data)
+        if field_ids is not None:
+            instance.fields.set(SkillField.objects.filter(id__in=field_ids))
+        return instance
+
+    def update(self, instance, validated_data):
+        field_ids = validated_data.pop("field_ids", None)
+        instance = super().update(instance, validated_data)
+        if field_ids is not None:
+            instance.fields.set(SkillField.objects.filter(id__in=field_ids))
+        return instance
 
 
 class StudentProfileSerializer(serializers.ModelSerializer):
@@ -96,11 +137,19 @@ class StudentProfileSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         skills_ids = validated_data.pop("skills_ids", None)
+        next_course = (validated_data.get("course", instance.course) or "").strip()
 
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
 
         if skills_ids is not None:
+            if next_course:
+                allowed_ids = allowed_skill_ids_for_course(next_course)
+                invalid_ids = [sid for sid in set(skills_ids) if sid not in allowed_ids]
+                if invalid_ids:
+                    raise serializers.ValidationError(
+                        {"skills_ids": "Some selected skills are not available for the selected course."}
+                    )
             skills = Skill.objects.filter(id__in=skills_ids)
             instance.skills.set(skills)
 

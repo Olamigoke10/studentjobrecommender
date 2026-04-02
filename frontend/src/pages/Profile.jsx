@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { authAPI } from '../api/auth.api';
 import { useAuth } from '../auth/AuthContext';
 import Loader from '../components/Loader';
@@ -28,11 +28,55 @@ const Profile = () => {
     skills_ids: [],
   });
   const [courses, setCourses] = useState(FALLBACK_COURSES);
+  const [profileLoaded, setProfileLoaded] = useState(false);
+
+  const loadSkills = useCallback(async (courseValue) => {
+    try {
+      const response = await authAPI.getSkills(courseValue);
+      const nextSkills = response.data || [];
+      setSkills(nextSkills);
+      const allowedIds = new Set(nextSkills.map((s) => s.id));
+      setFormData((prev) => {
+        const filteredIds = prev.skills_ids.filter((id) => allowedIds.has(id));
+        if (filteredIds.length === prev.skills_ids.length) {
+          return prev;
+        }
+        return { ...prev, skills_ids: filteredIds };
+      });
+    } catch (err) {
+      // 404 = skills endpoint not deployed yet; treat as empty list
+      if (err.response?.status !== 404) {
+        console.error('Failed to load skills:', err);
+      }
+      setSkills([]);
+    }
+  }, []);
+
+  const loadProfile = useCallback(async () => {
+    try {
+      setLoading(true);
+      const response = await authAPI.getProfile();
+      const d = response.data;
+      updateUser(d);
+      setFormData({
+        name: d.name || '',
+        course: d.course || '',
+        preferred_job_type: d.preferred_job_type || 'graduate',
+        preferred_location: d.preferred_location || '',
+        skills_ids: d.skills ? d.skills.map((s) => s.id) : [],
+      });
+      setProfileLoaded(true);
+    } catch (err) {
+      console.error('Failed to load profile:', err);
+      setError('Failed to load profile. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  }, [updateUser]);
 
   useEffect(() => {
     loadProfile();
-    loadSkills();
-  }, []);
+  }, [loadProfile]);
 
   useEffect(() => {
     authAPI.getCourses()
@@ -41,42 +85,9 @@ const Profile = () => {
   }, []);
 
   useEffect(() => {
-    if (user) {
-      setFormData({
-        name: user.name || '',
-        course: user.course || '',
-        preferred_job_type: user.preferred_job_type || 'graduate',
-        preferred_location: user.preferred_location || '',
-        skills_ids: user.skills ? user.skills.map(s => s.id) : [],
-      });
-    }
-  }, [user]);
-
-  const loadProfile = async () => {
-    try {
-      setLoading(true);
-      const response = await authAPI.getProfile();
-      updateUser(response.data);
-    } catch (err) {
-      console.error('Failed to load profile:', err);
-      setError('Failed to load profile. Please try again.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const loadSkills = async () => {
-    try {
-      const response = await authAPI.getSkills();
-      setSkills(response.data);
-    } catch (err) {
-      // 404 = skills endpoint not deployed yet; treat as empty list
-      if (err.response?.status !== 404) {
-        console.error('Failed to load skills:', err);
-      }
-      setSkills([]);
-    }
-  };
+    if (!profileLoaded) return;
+    loadSkills(formData.course);
+  }, [formData.course, profileLoaded, loadSkills]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -108,7 +119,15 @@ const Profile = () => {
     try {
       await authAPI.updateProfile(formData);
       const response = await authAPI.getProfile();
-      updateUser(response.data);
+      const d = response.data;
+      updateUser(d);
+      setFormData({
+        name: d.name || '',
+        course: d.course || '',
+        preferred_job_type: d.preferred_job_type || 'graduate',
+        preferred_location: d.preferred_location || '',
+        skills_ids: d.skills ? d.skills.map((s) => s.id) : [],
+      });
       setSuccess(true);
       setTimeout(() => setSuccess(false), 3000);
     } catch (err) {

@@ -5,9 +5,7 @@ import { ROUTES } from '../utils/constants';
 import talentPathLogo from '../../logo/logo.png';
 
 const navLinks = [
-  { to: ROUTES.DASHBOARD, label: 'Dashboard' },
   { to: ROUTES.JOBS, label: 'Browse Jobs' },
-  { to: ROUTES.SAVED_JOBS, label: 'Saved' },
   { to: ROUTES.APPLICATIONS, label: 'Applications' },
   { to: ROUTES.RECOMMENDATIONS, label: 'For You' },
   { to: ROUTES.PROFILE, label: 'Profile' },

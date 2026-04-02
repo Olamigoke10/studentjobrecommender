@@ -16,8 +16,16 @@ class User(AbstractUser):
         return self.email
     
 
+class SkillField(models.Model):
+    name = models.CharField(max_length=150, unique=True)
+
+    def __str__(self):
+        return self.name
+
+
 class Skill (models.Model):
     name = models.CharField(max_length=100, unique=True)
+    fields = models.ManyToManyField(SkillField, related_name="skills", blank=True)
 
     def __str__(self):
         return self.name
