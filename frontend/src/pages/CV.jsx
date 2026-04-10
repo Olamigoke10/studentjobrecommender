@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
 import { authAPI } from '../api/auth.api';
@@ -24,6 +24,10 @@ const CV = () => {
   const [aiLoading, setAiLoading] = useState(false);
   const [aiError, setAiError] = useState(null);
   const [aiGeneratedSummary, setAiGeneratedSummary] = useState(null);
+  const [summarySuggestionKind, setSummarySuggestionKind] = useState(null);
+  const [parseLoading, setParseLoading] = useState(false);
+  const [parseError, setParseError] = useState(null);
+  const pdfInputRef = useRef(null);
 
   useEffect(() => {
     loadCV();
@@ -101,7 +105,84 @@ const CV = () => {
   const updateExperience = (i, field, value) => setExperience(prev => prev.map((x, idx) => idx === i ? { ...x, [field]: value } : x));
 
   const handlePrint = () => {
-    window.print();
+    document.getElementById('cv-preview')?.scrollIntoView({ behavior: 'auto', block: 'start' });
+    requestAnimationFrame(() => {
+      window.print();
+    });
+  };
+
+  const escapeHtml = (s) =>
+    String(s ?? '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/"/g, '&quot;');
+
+  const handleDownloadHtml = () => {
+    if (!previewData) return;
+    const safeName = (previewData.name || 'CV').replace(/[<>:"/\\|?*]/g, '').trim().slice(0, 80) || 'CV';
+    const eduBlocks = education
+      .filter((e) => e.institution || e.degree || e.subject)
+      .map(
+        (e) => `
+        <div class="block">
+          <p class="title">${escapeHtml(e.institution)}</p>
+          <p>${escapeHtml([e.degree, e.subject].filter(Boolean).join(' '))}${e.start_date || e.end_date ? ` · ${escapeHtml(e.start_date)} – ${escapeHtml(e.end_date)}` : ''}</p>
+          ${e.description ? `<p class="desc">${escapeHtml(e.description)}</p>` : ''}
+        </div>`
+      )
+      .join('');
+    const expBlocks = experience
+      .filter((x) => x.company || x.role)
+      .map(
+        (x) => `
+        <div class="block">
+          <p class="title">${escapeHtml(x.role)} at ${escapeHtml(x.company)}</p>
+          ${x.start_date || x.end_date ? `<p class="dates">${escapeHtml(x.start_date)} – ${escapeHtml(x.end_date)}</p>` : ''}
+          ${x.description ? `<p class="desc">${escapeHtml(x.description)}</p>` : ''}
+        </div>`
+      )
+      .join('');
+    const skillsLine =
+      previewData.skills?.length > 0 ? `<p class="meta">${previewData.skills.map(escapeHtml).join(' · ')}</p>` : '';
+    const doc = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>${escapeHtml(previewData.name || 'CV')}</title>
+  <style>
+    body { font-family: system-ui, Segoe UI, sans-serif; max-width: 720px; margin: 24px auto; padding: 0 16px; color: #111; line-height: 1.45; }
+    h1 { font-size: 1.35rem; margin: 0 0 4px; }
+    .meta { color: #444; margin: 2px 0; font-size: 0.95rem; }
+    h2 { font-size: 1rem; margin: 1.25rem 0 0.5rem; border-bottom: 1px solid #ddd; padding-bottom: 4px; }
+    .block { margin-bottom: 0.85rem; }
+    .title { font-weight: 600; margin: 0 0 2px; }
+    .dates { color: #555; font-size: 0.85rem; margin: 0 0 4px; }
+    .desc { margin: 4px 0 0; font-size: 0.9rem; color: #333; white-space: pre-wrap; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>${escapeHtml(previewData.name || 'Your Name')}</h1>
+    ${previewData.email ? `<p class="meta">${escapeHtml(previewData.email)}</p>` : ''}
+    ${previewData.course ? `<p class="meta">${escapeHtml(previewData.course)}</p>` : ''}
+    ${skillsLine}
+  </header>
+  ${summary ? `<section><h2>Summary</h2><p class="desc">${escapeHtml(summary)}</p></section>` : ''}
+  ${eduBlocks ? `<section><h2>Education</h2>${eduBlocks}</section>` : ''}
+  ${expBlocks ? `<section><h2>Experience</h2>${expBlocks}</section>` : ''}
+</body>
+</html>`;
+    const blob = new Blob([doc], { type: 'text/html;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${safeName.replace(/\s+/g, '-')}-cv.html`;
+    a.rel = 'noopener';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
   };
 
   const handleGenerateSummary = async () => {
@@ -122,11 +203,12 @@ const CV = () => {
       if (jobId && Number.isInteger(jobId)) payload.job_id = jobId;
       const res = await authAPI.generateCVSummary(payload);
       setAiGeneratedSummary(res.data.summary || '');
+      setSummarySuggestionKind('ai');
     } catch (err) {
       let msg = err.response?.data?.detail || err.response?.data?.message || 'Failed to generate summary. Try again.';
       if (typeof msg === 'string' && (msg.includes('429') || msg.toLowerCase().includes('quota') || msg.length > 200)) {
         if (msg.toLowerCase().includes('quota') || msg.includes('429')) {
-          msg = 'AI limit reached. Add billing at platform.openai.com or try again later.';
+          msg = 'AI limit reached. Check your provider billing or try again later.';
         } else {
           msg = 'AI summary is temporarily unavailable. Please try again later.';
         }
@@ -137,47 +219,142 @@ const CV = () => {
     }
   };
 
+  const mapImportedEducation = (rows) =>
+    rows.map((e) => ({
+      institution: e.institution || '',
+      degree: e.degree || '',
+      subject: e.subject || '',
+      start_date: e.start_date || '',
+      end_date: e.end_date || '',
+      description: e.description || '',
+    }));
+
+  const mapImportedExperience = (rows) =>
+    rows.map((x) => ({
+      company: x.company || '',
+      role: x.role || '',
+      start_date: x.start_date || '',
+      end_date: x.end_date || '',
+      description: x.description || '',
+    }));
+
+  const handlePdfSelected = async (e) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+    setParseError(null);
+    setParseLoading(true);
+    try {
+      const res = await authAPI.parseCVPdf(file);
+      const d = res.data;
+      const hasEdu = Array.isArray(d.education) && d.education.length > 0;
+      const hasExp = Array.isArray(d.experience) && d.experience.length > 0;
+      const hasSummary = typeof d.summary === 'string' && d.summary.trim().length > 0;
+      if (!hasEdu && !hasExp && !hasSummary) {
+        setParseError('Could not extract much from this PDF. Use a text-based CV or fill the form manually.');
+        return;
+      }
+      if (hasEdu) setEducation(mapImportedEducation(d.education));
+      if (hasExp) setExperience(mapImportedExperience(d.experience));
+      if (hasSummary) {
+        setAiGeneratedSummary(d.summary.trim());
+        setSummarySuggestionKind('import');
+      }
+    } catch (err) {
+      const msg = err.response?.data?.detail || err.response?.data?.message || 'Import failed. Try another PDF.';
+      setParseError(typeof msg === 'string' ? msg : 'Import failed. Try again.');
+    } finally {
+      setParseLoading(false);
+    }
+  };
+
   const useGeneratedSummary = () => {
     if (aiGeneratedSummary) setSummary(aiGeneratedSummary);
     setAiGeneratedSummary(null);
     setAiError(null);
+    setSummarySuggestionKind(null);
   };
 
   if (loading) return <Loader />;
 
   return (
     <div className="py-4 sm:py-6 animate-fade-in">
-      <BackButton className="mb-4" />
-      <div className="mb-4 sm:mb-6 flex flex-col sm:flex-row sm:flex-wrap sm:items-end sm:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">CV Builder</h1>
-          <p className="mt-1 sm:mt-2 text-slate-600 dark:text-slate-300 text-sm sm:text-base">Build your CV and export to PDF</p>
+      <div className="no-print">
+        <BackButton className="mb-4" />
+        <div className="mb-4 sm:mb-6 flex flex-col sm:flex-row sm:flex-wrap sm:items-end sm:justify-between gap-4">
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">CV Builder</h1>
+            <p className="mt-1 sm:mt-2 text-slate-600 dark:text-slate-300 text-sm sm:text-base">
+              Export as PDF (via your browser&apos;s print dialog) or download an HTML file to open or print elsewhere.
+            </p>
+          </div>
+          <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+            <input
+              ref={pdfInputRef}
+              type="file"
+              accept=".pdf,application/pdf"
+              className="hidden"
+              tabIndex={-1}
+              aria-hidden
+              onChange={handlePdfSelected}
+            />
+            <button
+              type="button"
+              onClick={() => pdfInputRef.current?.click()}
+              disabled={parseLoading}
+              className="btn-secondary w-full sm:w-auto min-h-[44px] inline-flex items-center justify-center gap-2"
+            >
+              {parseLoading ? (
+                <>
+                  <i className="bx bx-loader-alt bx-spin text-lg" />
+                  Importing…
+                </>
+              ) : (
+                <>
+                  <i className="bx bx-upload text-lg" />
+                  Import from PDF
+                </>
+              )}
+            </button>
+            <button type="button" onClick={handlePrint} className="btn-primary w-full sm:w-auto min-h-[44px]">
+              Print / Save as PDF
+            </button>
+            <button
+              type="button"
+              onClick={handleDownloadHtml}
+              className="btn-secondary w-full sm:w-auto min-h-[44px] inline-flex items-center justify-center gap-2"
+            >
+              <i className="bx bx-download text-lg" aria-hidden />
+              Download HTML
+            </button>
+          </div>
         </div>
-        <div className="flex flex-col sm:flex-row gap-2 no-print w-full sm:w-auto">
-          <button type="button" onClick={handlePrint} className="btn-primary w-full sm:w-auto min-h-[44px]">
-            Print / Save as PDF
-          </button>
-        </div>
+
+        {error && (
+          <div className="mb-4 rounded-xl bg-red-50 border border-red-100 px-4 py-3">
+            <p className="text-sm font-medium text-red-800">{error}</p>
+          </div>
+        )}
+        {success && (
+          <div className="mb-4 rounded-xl bg-emerald-50 border border-emerald-200 px-4 py-3 flex items-center gap-2">
+            <i className="bx bx-check-circle text-emerald-600 text-xl flex-shrink-0" />
+            <p className="text-sm font-medium text-emerald-800">CV saved.</p>
+          </div>
+        )}
+
+        {parseError && (
+          <div className="mb-4 rounded-xl bg-amber-50 border border-amber-100 px-4 py-3">
+            <p className="text-sm font-medium text-amber-900">{parseError}</p>
+          </div>
+        )}
+
+        {jobId && (
+          <div className="mb-4 rounded-xl bg-primary-50 dark:bg-primary-900/30 border border-primary-200 dark:border-primary-800 px-4 py-3 flex items-center gap-2">
+            <i className="bx bx-briefcase text-primary-600 text-xl flex-shrink-0" />
+            <p className="text-sm font-medium text-primary-800 dark:text-primary-200">You&apos;re building your CV for a specific job. Use &quot;Generate with AI&quot; to get a summary tailored to that role.</p>
+          </div>
+        )}
       </div>
-
-      {error && (
-        <div className="mb-4 rounded-xl bg-red-50 border border-red-100 px-4 py-3">
-          <p className="text-sm font-medium text-red-800">{error}</p>
-        </div>
-      )}
-      {success && (
-        <div className="mb-4 rounded-xl bg-emerald-50 border border-emerald-200 px-4 py-3 flex items-center gap-2">
-          <i className="bx bx-check-circle text-emerald-600 text-xl flex-shrink-0" />
-          <p className="text-sm font-medium text-emerald-800">CV saved.</p>
-        </div>
-      )}
-
-      {jobId && (
-        <div className="mb-4 rounded-xl bg-primary-50 dark:bg-primary-900/30 border border-primary-200 dark:border-primary-800 px-4 py-3 flex items-center gap-2">
-          <i className="bx bx-briefcase text-primary-600 text-xl flex-shrink-0" />
-          <p className="text-sm font-medium text-primary-800 dark:text-primary-200">You&apos;re building your CV for a specific job. Use &quot;Generate with AI&quot; to get a summary tailored to that role.</p>
-        </div>
-      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
         <form onSubmit={handleSave} className="space-y-6 no-print">
@@ -208,13 +385,23 @@ const CV = () => {
             )}
             {aiGeneratedSummary && (
               <div className="mb-4 p-4 rounded-xl border border-primary-200 dark:border-primary-800 bg-primary-50/50 dark:bg-primary-900/20">
-                <p className="text-xs font-semibold text-primary-800 mb-2">Suggested summary</p>
+                <p className="text-xs font-semibold text-primary-800 mb-2">
+                  {summarySuggestionKind === 'import' ? 'Imported summary' : 'Suggested summary'}
+                </p>
                 <p className="text-sm text-slate-700 dark:text-slate-200 whitespace-pre-wrap mb-3">{aiGeneratedSummary}</p>
                 <div className="flex gap-2">
                   <button type="button" onClick={useGeneratedSummary} className="btn-primary text-sm py-2">
                     Use this
                   </button>
-                  <button type="button" onClick={() => { setAiGeneratedSummary(null); setAiError(null); }} className="btn-secondary text-sm py-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setAiGeneratedSummary(null);
+                      setAiError(null);
+                      setSummarySuggestionKind(null);
+                    }}
+                    className="btn-secondary text-sm py-2"
+                  >
                     Cancel
                   </button>
                 </div>
@@ -342,10 +529,27 @@ const CV = () => {
 
       <style>{`
         @media print {
-          body * { visibility: hidden; }
-          #cv-preview, #cv-preview * { visibility: visible; }
-          #cv-preview { position: absolute; left: 0; top: 0; width: 100%; }
+          @page { margin: 14mm; }
+          html {
+            print-color-adjust: exact;
+            -webkit-print-color-adjust: exact;
+          }
+          html, body {
+            background: #fff !important;
+            color: #111 !important;
+          }
           .no-print { display: none !important; }
+          nav { display: none !important; }
+          main {
+            max-width: 100% !important;
+            padding-left: 0 !important;
+            padding-right: 0 !important;
+            overflow: visible !important;
+          }
+          #cv-preview {
+            box-shadow: none !important;
+            border: none !important;
+          }
         }
       `}</style>
     </div>

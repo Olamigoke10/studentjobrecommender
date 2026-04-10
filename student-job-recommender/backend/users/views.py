@@ -11,6 +11,7 @@ from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 
 # Create your views here.
 from rest_framework import generics, permissions, views, status
+from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 from .skill_query import skills_queryset_for_course
@@ -312,11 +313,22 @@ class CVAISummaryView(views.APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request):
-        import os
-        api_key = os.environ.get("OPENAI_API_KEY")
-        if not api_key:
+        from .cv_llm import (
+            LLMConfigError,
+            LLMUpstreamError,
+            generate_cv_summary_text,
+            llm_config_status,
+        )
+
+        st = llm_config_status()
+        if not st.get("configured"):
             return Response(
-                {"detail": "AI summary is not configured. Add OPENAI_API_KEY on the server."},
+                {
+                    "detail": (
+                        "AI summary is not configured. Set CV_AI_PROVIDER (openai, anthropic, or gemini) "
+                        "and the matching API key (OPENAI_API_KEY, ANTHROPIC_API_KEY, or GOOGLE_API_KEY / GEMINI_API_KEY)."
+                    ),
+                },
                 status=status.HTTP_503_SERVICE_UNAVAILABLE,
             )
         education_data = request.data.get("education") or []
@@ -343,38 +355,26 @@ class CVAISummaryView(views.APIView):
                     f"Description: {desc}\n"
                 )
         try:
-            from openai import OpenAI
-            client = OpenAI(api_key=api_key)
-            prompt = (
-                "You are a professional CV writer for students and graduates. "
-                "Based on the following CV information, write a short professional summary (2–4 sentences) "
-                "suitable for a CV. Be concise, positive, and focus on strengths and goals. "
-                "Write only the summary, no headings or labels."
+            summary = generate_cv_summary_text(
+                context=context,
+                job_context=job_context,
+                current_summary=current_summary,
             )
-            if job_context:
-                prompt += (
-                    " Tailor the summary towards the following target job, but keep it reusable for similar roles."
-                )
-            prompt += f"\n\nCV information:\n{context}{job_context}\n"
-            if current_summary:
-                prompt += f"\nCurrent summary (they can keep or replace): {current_summary}\n"
-            response = client.chat.completions.create(
-                model="gpt-4o-mini",
-                messages=[{"role": "user", "content": prompt}],
-                max_tokens=200,
-            )
-            summary = (response.choices[0].message.content or "").strip()
             if not summary:
                 return Response(
                     {"detail": "AI did not return a summary. Please try again."},
                     status=status.HTTP_502_BAD_GATEWAY,
                 )
             return Response({"summary": summary}, status=status.HTTP_200_OK)
+        except LLMConfigError as e:
+            return Response({"detail": str(e)}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
+        except LLMUpstreamError as e:
+            return Response({"detail": str(e)}, status=status.HTTP_502_BAD_GATEWAY)
         except Exception as e:
             err_str = str(e).lower()
             if "429" in err_str or "quota" in err_str or "insufficient_quota" in err_str:
                 return Response(
-                    {"detail": "AI service limit reached. Check your OpenAI plan and billing at platform.openai.com, or try again later."},
+                    {"detail": "AI service limit reached. Check your provider billing and plan, or try again later."},
                     status=status.HTTP_502_BAD_GATEWAY,
                 )
             if "rate" in err_str or "limit" in err_str:
@@ -386,5 +386,95 @@ class CVAISummaryView(views.APIView):
                 {"detail": "AI summary is temporarily unavailable. Please try again later."},
                 status=status.HTTP_502_BAD_GATEWAY,
             )
+
+
+class CVParseUploadView(views.APIView):
+    """POST multipart file: extract text from PDF and map to education/experience via configured LLM."""
+    permission_classes = [permissions.IsAuthenticated]
+    parser_classes = [MultiPartParser, FormParser]
+    MAX_PDF_BYTES = 5 * 1024 * 1024
+
+    def post(self, request):
+        from .cv_llm import (
+            LLMConfigError,
+            LLMUpstreamError,
+            llm_config_status,
+            normalize_parsed_cv,
+            parse_cv_document_text,
+        )
+        from .cv_pdf import pdf_bytes_to_text
+
+        st = llm_config_status()
+        if not st.get("configured"):
+            return Response(
+                {
+                    "detail": (
+                        "CV import is not configured. Set CV_AI_PROVIDER and the matching API key "
+                        "(see server docs for OPENAI_API_KEY, ANTHROPIC_API_KEY, or GOOGLE_API_KEY)."
+                    ),
+                },
+                status=status.HTTP_503_SERVICE_UNAVAILABLE,
+            )
+
+        upload = request.FILES.get("file")
+        if not upload:
+            return Response({"detail": 'Missing file: send multipart field "file" with a PDF.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        name = (getattr(upload, "name", "") or "").lower()
+        if not name.endswith(".pdf"):
+            return Response({"detail": "Only PDF files are supported (.pdf)."}, status=status.HTTP_400_BAD_REQUEST)
+
+        size = getattr(upload, "size", None)
+        if size is not None and size > self.MAX_PDF_BYTES:
+            return Response(
+                {"detail": f"File too large. Maximum size is {self.MAX_PDF_BYTES // (1024 * 1024)} MB."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        raw = upload.read()
+        if len(raw) > self.MAX_PDF_BYTES:
+            return Response(
+                {"detail": f"File too large. Maximum size is {self.MAX_PDF_BYTES // (1024 * 1024)} MB."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            text = pdf_bytes_to_text(raw)
+        except Exception:
+            return Response(
+                {"detail": "Could not read this file as a PDF."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if not text or len(text.strip()) < 30:
+            return Response(
+                {
+                    "detail": (
+                        "Almost no text could be extracted. Scanned image-only PDFs need OCR elsewhere first."
+                    ),
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            parsed = parse_cv_document_text(text)
+            normalized = normalize_parsed_cv(parsed)
+        except LLMConfigError as e:
+            return Response({"detail": str(e)}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
+        except LLMUpstreamError as e:
+            return Response({"detail": str(e)}, status=status.HTTP_502_BAD_GATEWAY)
+        except Exception as e:
+            err_str = str(e).lower()
+            if "429" in err_str or "quota" in err_str or "insufficient_quota" in err_str:
+                return Response(
+                    {"detail": "AI service limit reached. Check your provider billing, or try again later."},
+                    status=status.HTTP_502_BAD_GATEWAY,
+                )
+            return Response(
+                {"detail": "CV import failed. Please try again or enter details manually."},
+                status=status.HTTP_502_BAD_GATEWAY,
+            )
+
+        return Response(normalized, status=status.HTTP_200_OK)
 
 

@@ -38,4 +38,11 @@ export const authAPI = {
 
   generateCVSummary: (data) =>
     axiosInstance.post('/api/users/me/cv/ai-summary/', data),
+
+  /** PDF upload: returns { summary?, education[], experience[] } */
+  parseCVPdf: (file) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    return axiosInstance.post('/api/users/me/cv/parse/', formData);
+  },
 };

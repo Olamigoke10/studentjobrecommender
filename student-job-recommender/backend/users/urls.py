@@ -13,6 +13,7 @@ from .views import (
     CourseListView,
     CVView,
     CVAISummaryView,
+    CVParseUploadView,
 )
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
@@ -34,6 +35,7 @@ urlpatterns = [
     path("courses/", CourseListView.as_view(), name="course_list"),
     path("me/cv/", CVView.as_view(), name="cv"),
     path("me/cv/ai-summary/", CVAISummaryView.as_view(), name="cv_ai_summary"),
+    path("me/cv/parse/", CVParseUploadView.as_view(), name="cv_parse"),
 ]
 
 
